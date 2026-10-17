@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Flight Monitor - Outbound Assistant V2</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/v2/css/theme.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/layout.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/components.css?v=2.2">
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Sidebar Injection Slot -->
+        <div id="sidebar-slot"></div>
+
+        <div class="app-main">
+            <!-- Header Injection Slot -->
+            <div id="header-slot"></div>
+
+            <main class="app-content">
+                <!-- Viewer Mode Notice Banner (Auto-populated if Viewer) -->
+                <div id="viewer-banner-slot"></div>
+
+                <!-- Live Campaign Mission Control & Cooldown Safety Bar -->
+                <div class="campaign-control-bar" id="campaign-control-bar">
+                    <div class="control-bar-left">
+                        <div class="control-pill-card">
+                            <span class="control-pill-label">CAMPAIGN</span>
+                            <span id="dash-campaign-status" class="status-pill answered">
+                                <span class="live-dot active"></span>
+                                <span>RUNNING</span>
+                            </span>
+                        </div>
+                        <div class="control-pill-card">
+                            <span class="control-pill-label">NAYATEL TRUNK</span>
+                            <span id="dash-trunk-status" class="status-pill answered">
+                                <span class="live-dot active"></span>
+                                <span>ONLINE</span>
+                            </span>
+                        </div>
+                        <div class="control-pill-card" id="dash-circuit-breaker-item">
+                            <span class="control-pill-label">CIRCUIT BREAKER</span>
+                            <span id="dash-circuit-breaker-badge" class="status-pill safe" title="Carrier consecutive decline threshold">
+                                <span class="live-dot active"></span>
+                                <span>0/20 Safe</span>
+                            </span>
+                            <button id="btn-dash-resume-cb" class="v2-btn v2-btn-primary v2-btn-xs" data-role="admin" style="display: none; padding: 0.2rem 0.55rem; font-size: 0.72rem; margin-left: 0.35rem;" onclick="resumeCircuitBreaker()">
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="control-bar-right" data-role="admin">
+                        <button id="btn-dash-toggle-worker" class="btn-control-pause" onclick="togglePauseCampaign()">
+                            <span id="dash-pause-icon">⏸️</span>
+                            <span id="dash-pause-text">Pause Campaign</span>
+                        </button>
+                        <button class="btn-control-stop" onclick="triggerEmergencyStop()">
+                            <span>🛑</span>
+                            <span>Emergency Stop</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Header with Scope Toggle -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--v2-text-muted);">
+                        📊 Campaign Telemetry & Volume
+                    </span>
+                    <div class="kpi-toggle-group">
+                        <button id="btn-kpi-alltime" class="kpi-toggle-btn active" onclick="setKpiPeriod('all_time')">
+                            All-Time (Cumulative)
+                        </button>
+                        <button id="btn-kpi-today" class="kpi-toggle-btn" onclick="setKpiPeriod('today')">
+                            Today's Shift
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Calls Dialed</span>
+                            <span class="kpi-icon">📞</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="metric-total-dialed">0</span>
+                        </div>
+                        <span class="kpi-subtext" id="metric-subtext-dialed">Cumulative campaign dispatches</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Calls Answered</span>
+                            <span class="kpi-icon">✅</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="metric-total-answered">0</span>
+                            <span class="kpi-badge emerald" id="metric-answer-rate">0.0%</span>
+                        </div>
+                        <span class="kpi-subtext" id="metric-subtext-answered">Confirmed student connections</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Active Channels</span>
+                            <span class="kpi-icon">⚡</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="metric-active-channels">0 / 5</span>
+                        </div>
+                        <span class="kpi-subtext">Nayatel SIP trunk capacity in flight</span>
+                    </div>
+                </div>
+
+                <!-- Active In-Flight Call Channels (Hardware Rack Strip) -->
+                <div class="v2-card">
+                    <div class="v2-card-header" style="padding: 1rem 1.25rem;">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title" style="font-size: 0.95rem;">
+                                <span>⚡ Active In-Flight Channels (5-Slot Rack)</span>
+                            </div>
+                            <span class="v2-card-subtitle">Real-time Asterisk ARI sessions and live conversation timers</span>
+                        </div>
+                    </div>
+                    <div class="v2-card-body" style="padding: 1rem 1.25rem;">
+                        <div id="active-channels-container" class="channel-rack-grid">
+                            <!-- High-density 5-channel strips rendered here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Call Stream / Feed with Full Filters & Pagination -->
+                <div class="v2-card">
+                    <div class="v2-card-header" style="padding: 1rem 1.25rem;">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span>📋 Call Logs & Candidate Feedback</span>
+                            </div>
+                            <span class="v2-card-subtitle">Complete searchable event stream of campaign dispatches</span>
+                        </div>
+                    </div>
+
+                    <!-- Filter & Search Controls Toolbar -->
+                    <div class="v2-table-toolbar">
+                        <div class="v2-toolbar-left">
+                            <div class="v2-search-wrapper">
+                                <span class="v2-search-icon">🔍</span>
+                                <input type="text" id="live-search-input" class="v2-input" placeholder="Search Candidate, Father, or Phone..." oninput="onLiveSearchInput()">
+                            </div>
+
+                            <select id="live-status-filter" class="v2-select" onchange="onLiveFilterChange()">
+                                <option value="ALL">All Statuses</option>
+                                <option value="ANSWERED">ANSWERED</option>
+                                <option value="DECLINED">DECLINED</option>
+                                <option value="NO-ANSWER">NO-ANSWER</option>
+                                <option value="DISCONNECTED-MID-CALL">DISCONNECTED-MID-CALL</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                            </select>
+
+                            <select id="live-dtmf-filter" class="v2-select" onchange="onLiveFilterChange()">
+                                <option value="ALL">All Responses</option>
+                                <option value="1">Interested (Pressed 1)</option>
+                                <option value="0">Skipped (No Key)</option>
+                            </select>
+
+                            <select id="live-pagesize-select" class="v2-select" onchange="onLivePageSizeChange()">
+                                <option value="25" selected>25 per page</option>
+                                <option value="50">50 per page</option>
+                                <option value="100">100 per page</option>
+                            </select>
+                        </div>
+
+                        <div class="v2-toolbar-right">
+                            <button class="v2-btn v2-btn-secondary v2-btn-sm" onclick="refreshLiveData(true)" title="Refresh Data">
+                                <span>🔄</span>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="v2-table-wrapper" style="border-top: none; border-bottom: none; border-radius: 0;">
+                        <table class="v2-table">
+                            <thead>
+                                <tr>
+                                    <th>Recipient Phone & Lead</th>
+                                    <th>Disposition</th>
+                                    <th>Duration</th>
+                                    <th>DTMF Feedback</th>
+                                    <th>Outbound DID</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live-feed-tbody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--v2-text-muted); padding: 2rem;">Loading call feed...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination Controls Footer -->
+                    <div class="v2-table-footer">
+                        <div class="v2-pagination-text" id="live-pagination-info">Showing 0 – 0 of 0 calls</div>
+                        <div class="v2-pagination-actions">
+                            <button class="v2-btn v2-btn-secondary v2-btn-sm" id="btn-live-prev" onclick="changeLivePage(-1)" disabled>
+                                ◀ Previous
+                            </button>
+                            <span class="v2-page-badge" id="live-page-num">Page 1 of 1</span>
+                            <button class="v2-btn v2-btn-secondary v2-btn-sm" id="btn-live-next" onclick="changeLivePage(1)" disabled>
+                                Next ▶
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Initiate Call Modal -->
+    <div class="v2-modal-overlay" id="initiate-call-modal">
+        <div class="v2-modal">
+            <div class="v2-modal-header">
+                <span class="v2-modal-title">📞 Initiate Single Outbound Call</span>
+                <button class="v2-modal-close" onclick="closeModal('initiate-call-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleInitiateCallSubmit(event)">
+                <div class="v2-modal-body">
+                    <div class="v2-form-group">
+                        <label class="v2-form-label" for="modal-call-phone">Recipient Phone Number *</label>
+                        <input type="text" id="modal-call-phone" class="v2-form-control" required placeholder="03XXXXXXXXX">
+                    </div>
+                    <div class="v2-form-group">
+                        <label class="v2-form-label" for="modal-call-callerid">Outbound Caller ID (Optional)</label>
+                        <input type="text" id="modal-call-callerid" class="v2-form-control" placeholder="Default university DID">
+                    </div>
+                </div>
+                <div class="v2-modal-footer">
+                    <button type="button" class="v2-btn v2-btn-secondary" onclick="closeModal('initiate-call-modal')">Cancel</button>
+                    <button type="submit" class="v2-btn v2-btn-primary" data-role="admin">Start Call</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/static/v2/js/core/api.js?v=2.2"></script>
+    <script src="/static/v2/js/core/auth.js?v=2.2"></script>
+    <script src="/static/v2/js/core/rbac.js?v=2.2"></script>
+    <script src="/static/v2/js/components/toast.js?v=2.2"></script>
+    <script src="/static/v2/js/components/modal.js?v=2.2"></script>
+    <script src="/static/v2/js/core/shell.js?v=2.2"></script>
+    <script src="/static/v2/js/pages/live.js?v=2.2"></script>
+</body>
+</html>

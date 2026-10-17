@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Asterisk Outbound Campaign Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/rbac.css">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #131b2e;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 40%);
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            padding: 2.25rem 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .brand-header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            margin-bottom: 0.4rem;
+        }
+
+        .brand-header p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.45rem;
+            letter-spacing: 0.02em;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px;
+        }
+
+        .password-toggle:hover {
+            color: #ffffff;
+        }
+
+        .alert-error {
+            display: none;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 0.85rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="brand-header">
+            <div class="brand-badge">🔒 SECURE PORTAL</div>
+            <h1>Asterisk Outbound Assistant</h1>
+            <p>University of Rawalpindi Automated Dialing & Admissions Lead Engine</p>
+        </div>
+
+        <div id="error-alert" class="alert-error">
+            <span>⚠️</span>
+            <span id="error-message">Invalid email or password.</span>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="email">Institutional Email</label>
+                <div class="input-wrapper">
+                    <input type="email" id="email" required placeholder="e.g. admin@uor.edu.pk" autocomplete="email" autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" required placeholder="••••••••••••" autocomplete="current-password">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility()" title="Toggle password visibility">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" id="btn-login" class="btn-submit">
+                <span>Sign In to Dashboard</span>
+                <span>➔</span>
+            </button>
+        </form>
+
+        <div class="footer-note">
+            Protected by HttpOnly Session Encryption & Nayatel SIP Safeguards
+        </div>
+    </div>
+
+    <script>
+        // Dynamic Branding Adaptation (12-Factor Multi-Deployment)
+        async function loadBranding() {
+            try {
+                const res = await fetch('/api/v1/system/branding');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.project_name) {
+                        const h1 = document.querySelector('.brand-header h1');
+                        if (h1) h1.innerText = data.project_name;
+                        document.title = `Login - ${data.project_name}`;
+                    }
+                    if (data.organization_name) {
+                        const p = document.querySelector('.brand-header p');
+                        if (p) p.innerText = `${data.organization_name} Automated Dialing & Admissions Lead Engine`;
+                    }
+                    if (data.default_admin_email) {
+                        const em = document.getElementById('email');
+                        if (em) em.placeholder = `e.g. ${data.default_admin_email}`;
+                    }
+                }
+            } catch (e) {}
+        }
+        document.addEventListener('DOMContentLoaded', loadBranding);
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('password');
+            pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const btnLogin = document.getElementById('btn-login');
+            const errorAlert = document.getElementById('error-alert');
+            const errorMessage = document.getElementById('error-message');
+
+            errorAlert.style.display = 'none';
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = `<span>Signing in...</span>`;
+
+            try {
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    btnLogin.innerHTML = `<span>✅ Authenticated! Redirecting...</span>`;
+                    // Store minimal user info for display
+                    if (data.user) {
+                        try { localStorage.setItem('uor_user', JSON.stringify(data.user)); } catch (e) {}
+                    }
+                    // Determine redirect destination
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const destination = urlParams.get('redirect') || '/dashboard';
+                    window.location.href = destination;
+                } else {
+                    errorAlert.style.display = 'flex';
+                    errorMessage.innerText = data.detail || 'Login failed. Please check your credentials.';
+                    btnLogin.disabled = false;
+                    btnLogin.innerHTML = `<span>Sign In to Dashboard</span> <span>➔</span>`;
+                    passwordInput.focus();
+                }
+            } catch (err) {
+                console.error("Login request error:", err);
+                errorAlert.style.display = 'flex';
+                errorMessage.innerText = 'Unable to connect to server. Please try again.';
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = `<span>Sign In to Dashboard</span> <span>➔</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
+

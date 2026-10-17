@@ -1,0 +1,357 @@
+/* ==============================================================================
+   APP SHELL, SIDEBAR & TOP HEADER (V2 Enterprise Layout)
+   ============================================================================== */
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--v2-bg-canvas);
+}
+
+/* --- Persistent Left Sidebar --- */
+.app-sidebar {
+    width: var(--v2-sidebar-width);
+    background-color: var(--v2-bg-sidebar);
+    border-right: 1px solid var(--v2-border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    transition: transform 0.25s ease;
+}
+
+/* Sidebar Brand Header */
+.sidebar-brand {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--v2-border-subtle);
+}
+
+.brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--v2-radius-md);
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--v2-primary);
+    box-shadow: var(--v2-shadow-sm);
+    flex-shrink: 0;
+}
+
+.brand-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.brand-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--v2-text-primary);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.brand-subtitle {
+    font-size: 0.72rem;
+    color: var(--v2-text-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Sidebar Navigation Items */
+.sidebar-nav {
+    flex: 1;
+    padding: 1.25rem 0.85rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.nav-section-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--v2-text-muted);
+    padding: 0 0.65rem;
+    margin-bottom: 0.35rem;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    list-style: none;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--v2-radius-md);
+    color: var(--v2-text-secondary);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.nav-link-content {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.nav-link-icon {
+    font-size: 1.05rem;
+    opacity: 0.85;
+}
+
+.nav-link:hover {
+    background-color: var(--v2-bg-surface-elevated);
+    color: var(--v2-text-primary);
+    border-color: var(--v2-border);
+}
+
+.nav-link.active {
+    background-color: var(--v2-primary-light);
+    color: var(--v2-primary);
+    border-color: var(--v2-primary-border);
+    font-weight: 600;
+}
+
+.nav-link.active .nav-link-icon {
+    opacity: 1;
+    color: var(--v2-primary);
+}
+
+.nav-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--v2-radius-full);
+    line-height: 1.2;
+}
+
+.nav-badge-live {
+    background: var(--v2-emerald-bg);
+    color: var(--v2-emerald);
+    border: 1px solid var(--v2-emerald-border);
+}
+
+.nav-badge-count {
+    background: #f1f5f9;
+    color: var(--v2-text-muted);
+    border: 1px solid var(--v2-border);
+}
+
+/* Sidebar Footer (User Account & Role) */
+.sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--v2-border);
+    background: var(--v2-bg-surface-elevated);
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    line-height: 1.3;
+}
+
+.user-email-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--v2-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-role-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.45rem;
+    border-radius: var(--v2-radius-full);
+    width: fit-content;
+    margin-top: 0.2rem;
+}
+
+.user-role-chip.admin {
+    background: var(--v2-role-admin-bg);
+    color: var(--v2-role-admin);
+    border: 1px solid var(--v2-role-admin-border);
+}
+
+.user-role-chip.viewer {
+    background: var(--v2-role-viewer-bg);
+    color: var(--v2-role-viewer);
+    border: 1px solid var(--v2-role-viewer-border);
+}
+
+.btn-sidebar-logout {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--v2-text-muted);
+    padding: 0.45rem;
+    border-radius: var(--v2-radius-sm);
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.15s ease;
+}
+
+.btn-sidebar-logout:hover {
+    background: var(--v2-rose-bg);
+    color: var(--v2-rose);
+    border-color: var(--v2-rose-border);
+}
+
+/* --- Main Content Area --- */
+.app-main {
+    flex: 1;
+    margin-left: var(--v2-sidebar-width);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+}
+
+/* Sticky App Topbar */
+.app-header {
+    height: var(--v2-header-height);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--v2-border);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--v2-border);
+    color: var(--v2-text-primary);
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--v2-radius-sm);
+    cursor: pointer;
+}
+
+.header-breadcrumbs {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-page-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--v2-text-primary);
+    letter-spacing: -0.01em;
+}
+
+.header-page-subtitle {
+    font-size: 0.78rem;
+    color: var(--v2-text-muted);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Telephony Status Pill */
+.telephony-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--v2-radius-full);
+    font-size: 0.76rem;
+    font-weight: 600;
+    background: var(--v2-bg-surface);
+    border: 1px solid var(--v2-border);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--v2-emerald);
+    box-shadow: 0 0 8px var(--v2-emerald);
+}
+
+.pulse-dot.error {
+    background-color: var(--v2-rose);
+    box-shadow: 0 0 8px var(--v2-rose);
+}
+
+/* Body Content Area */
+.app-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Responsive Sidebar for Tablets & Mobile */
+@media (max-width: 992px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+    }
+    .app-sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--v2-shadow-lg);
+    }
+    .app-main {
+        margin-left: 0;
+    }
+    .mobile-menu-btn {
+        display: block;
+    }
+    .app-header {
+        padding: 0 1rem;
+    }
+    .app-content {
+        padding: 1rem;
+    }
+}

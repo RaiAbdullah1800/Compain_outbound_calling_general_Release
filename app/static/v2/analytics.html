@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telephony Analytics & Audit - Outbound Assistant V2</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/v2/css/theme.css?v=2.3">
+    <link rel="stylesheet" href="/static/v2/css/layout.css?v=2.3">
+    <link rel="stylesheet" href="/static/v2/css/components.css?v=2.3">
+</head>
+<body>
+    <div class="app-shell">
+        <div id="sidebar-slot"></div>
+
+        <div class="app-main">
+            <div id="header-slot"></div>
+
+            <main class="app-content">
+                <div id="viewer-banner-slot"></div>
+
+                <!-- Date Range Filter Bar -->
+                <div class="v2-card" style="margin-bottom: 1.5rem;">
+                    <div class="v2-card-body" style="padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                            <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--v2-primary); display: inline-flex; align-items: center; gap: 0.4rem;">
+                                📅 Date Range Filter:
+                            </span>
+                            <select id="date-preset-select" class="v2-select" style="width: auto; padding: 0.45rem 2.2rem 0.45rem 0.85rem; font-size: 0.84rem; font-weight: 600; cursor: pointer;" onchange="handleDatePresetChange(this.value)">
+                                <option value="all_time" selected>All Time (Campaign Inception)</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="7days">Last 7 Days</option>
+                                <option value="30days">Last 30 Days</option>
+                                <option value="custom">Custom Date Range</option>
+                            </select>
+
+                            <!-- Custom Date Range Inputs Container -->
+                            <div id="custom-date-container" style="display: none; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <input type="date" id="start-date-input" class="v2-input" style="width: auto; min-width: 140px; padding: 0.4rem 0.75rem; font-size: 0.82rem;" onchange="onCustomDateChange()">
+                                <span style="color: var(--v2-text-muted); font-size: 0.85rem; font-weight: 600;">to</span>
+                                <input type="date" id="end-date-input" class="v2-input" style="width: auto; min-width: 140px; padding: 0.4rem 0.75rem; font-size: 0.82rem;" onchange="onCustomDateChange()">
+                                <button type="button" class="v2-btn v2-btn-secondary v2-btn-sm" onclick="fetchAnalyticsData()" style="padding: 0.4rem 0.75rem;">
+                                    <span>Apply</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.8rem; color: var(--v2-text-muted); display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <span>⚡ Billing Rule:</span>
+                            <strong style="color: var(--v2-primary);">60-Second Pulse Ceiling per Call</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Macro KPI Summary Cards (6-Card Telecom & Lead Performance Grid) -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Outbound Dialed</span>
+                            <span class="kpi-icon">📊</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpi-total-dialed">0</span>
+                        </div>
+                        <span class="kpi-subtext">Completed + Attempted calls</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Overall Answer Rate</span>
+                            <span class="kpi-icon">📞</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" style="color: var(--v2-primary);" id="kpi-answer-rate">0.0%</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-answered-count">0 calls answered</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Active Duration</span>
+                            <span class="kpi-icon">⏱️</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" style="color: var(--v2-emerald);" id="kpi-total-duration">0s</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-avg-duration-sub">Avg: 0.0s per answered call</span>
+                    </div>
+
+                    <div class="kpi-card" style="border-left: 3px solid var(--v2-primary);">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Carrier Billed Minutes</span>
+                            <span class="kpi-icon">🏛️</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" style="color: var(--v2-primary);" id="kpi-billed-minutes">0 Mins</span>
+                        </div>
+                        <span class="kpi-subtext">Per-call 60s pulse billing ceiling</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Mid-Call Drop-off Rate</span>
+                            <span class="kpi-icon">⚠️</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" style="color: var(--v2-amber);" id="kpi-drop-rate">0.0%</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-drops-count">0 mid-call hangups</span>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Interested Leads (Key 1)</span>
+                            <span class="kpi-icon">🎯</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" style="color: var(--v2-role-admin);" id="kpi-leads-count">0</span>
+                        </div>
+                        <span class="kpi-subtext" id="kpi-conversion-rate">0.0% conversion rate</span>
+                    </div>
+                </div>
+
+                <!-- DID Line Performance Matrix (Extensions 2800 – 2809) -->
+                <div class="v2-card" style="margin-bottom: 1.75rem;">
+                    <div class="v2-card-header">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span id="did-card-title-text">📱 Line Extension DID Audit & Performance (Extensions 2800 – 2809)</span>
+                            </div>
+                            <span class="v2-card-subtitle" id="did-card-subtitle-text">Rotates every 1 hour (Shift A vs Shift B) · Per-DID throughput & conversion</span>
+                        </div>
+                    </div>
+
+                    <div class="v2-table-wrapper" style="border-left: none; border-right: none; border-radius: 0;">
+                        <table class="v2-table">
+                            <thead>
+                                <tr>
+                                    <th>Extension</th>
+                                    <th>Outbound DID Number</th>
+                                    <th>Shift Group</th>
+                                    <th>Total Dialed</th>
+                                    <th>Answered Calls</th>
+                                    <th>Answer Rate %</th>
+                                    <th>Total Active Duration</th>
+                                    <th>Carrier Billed Mins</th>
+                                    <th>Mid-Call Drops</th>
+                                    <th>Leads Converted</th>
+                                </tr>
+                            </thead>
+                            <tbody id="did-table-body">
+                                <tr>
+                                    <td colspan="10" style="text-align: center; color: var(--v2-text-muted); padding: 2.5rem;">Loading DID performance telemetry...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hourly PKT Distribution Table -->
+                <div class="v2-card">
+                    <div class="v2-card-header">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span>🕒 Hourly Call Distribution & Answer Rate (PKT)</span>
+                            </div>
+                            <span class="v2-card-subtitle">Peak dialing hours performance throughout operating window</span>
+                        </div>
+                    </div>
+
+                    <div class="v2-table-wrapper" style="border-left: none; border-right: none; border-radius: 0;">
+                        <table class="v2-table">
+                            <thead>
+                                <tr>
+                                    <th>Hour of Day (PKT)</th>
+                                    <th>Calls Dialed</th>
+                                    <th>Calls Answered</th>
+                                    <th>Hourly Answer Rate %</th>
+                                    <th>Interested Leads (Key 1)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hourly-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--v2-text-muted); padding: 2.5rem;">Loading hourly telemetry...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/static/v2/js/core/api.js?v=2.3"></script>
+    <script src="/static/v2/js/core/auth.js?v=2.3"></script>
+    <script src="/static/v2/js/core/rbac.js?v=2.3"></script>
+    <script src="/static/v2/js/components/toast.js?v=2.3"></script>
+    <script src="/static/v2/js/components/modal.js?v=2.3"></script>
+    <script src="/static/v2/js/core/shell.js?v=2.3"></script>
+    <script src="/static/v2/js/pages/analytics.js?v=2.3"></script>
+</body>
+</html>

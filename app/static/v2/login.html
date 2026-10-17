@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Asterisk Outbound Telecom</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/v2/css/theme.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/components.css?v=2.2">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            background-color: var(--v2-bg-canvas);
+            background-image: 
+                radial-gradient(circle at 18% 18%, rgba(37, 99, 235, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 82% 82%, rgba(16, 185, 129, 0.05) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .login-card {
+            background-color: var(--v2-bg-surface);
+            border: 1px solid var(--v2-border);
+            border-radius: var(--v2-radius-lg);
+            padding: 2.25rem 2rem;
+            box-shadow: var(--v2-shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--v2-primary), #60a5fa, var(--v2-emerald));
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
+            background-color: var(--v2-primary-light);
+            border: 1px solid var(--v2-primary-border);
+            border-radius: var(--v2-radius-full);
+            color: var(--v2-primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+        }
+
+        .brand-pill .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--v2-primary);
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+        }
+
+        .brand-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--v2-text-primary);
+            margin-bottom: 0.35rem;
+        }
+
+        .brand-sub {
+            font-size: 0.84rem;
+            color: var(--v2-text-secondary);
+            line-height: 1.45;
+        }
+
+        .login-alert {
+            display: none;
+            padding: 0.75rem 1rem;
+            border-radius: var(--v2-radius-md);
+            background-color: var(--v2-rose-bg);
+            border: 1px solid var(--v2-rose-border);
+            color: var(--v2-rose);
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .login-form label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--v2-text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group-pass {
+            position: relative;
+        }
+
+        .input-group-pass input {
+            padding-right: 2.75rem;
+        }
+
+        .pass-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--v2-text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--v2-radius-sm);
+            transition: color 0.15s ease;
+        }
+
+        .pass-toggle:hover {
+            color: var(--v2-text-primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: var(--v2-radius-md);
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .role-cards-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--v2-border-subtle);
+        }
+
+        .role-box {
+            padding: 0.65rem 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--v2-border-subtle);
+            border-radius: var(--v2-radius-sm);
+            font-size: 0.72rem;
+            color: var(--v2-text-muted);
+        }
+
+        .role-box-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .role-box-title.admin {
+            color: var(--v2-role-admin);
+        }
+
+        .role-box-title.viewer {
+            color: var(--v2-role-viewer);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.74rem;
+            color: var(--v2-text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-header">
+                <div class="brand-pill">
+                    <span class="pulse-dot"></span>
+                    <span>Institutional Telecom Engine</span>
+                </div>
+                <h1 class="brand-title" id="brand-project">TUF Outbound Calling</h1>
+                <p class="brand-sub" id="brand-org">Automated Asterisk Dispatch & Campaign Telephony Hub</p>
+            </div>
+
+            <div id="login-alert" class="login-alert">
+                <span>⚠️</span>
+                <span id="login-alert-msg">Invalid email or password.</span>
+            </div>
+
+            <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Institutional Email</label>
+                    <input type="email" id="email" class="v2-input" required placeholder="admin@tuf.edu.pk" autocomplete="email" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Account Password</label>
+                    <div class="input-group-pass">
+                        <input type="password" id="password" class="v2-input" required placeholder="••••••••••••" autocomplete="current-password">
+                        <button type="button" class="pass-toggle" onclick="togglePassword()" title="Show/Hide Password" aria-label="Toggle password visibility">
+                            <span id="pass-eye">👁️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit" class="v2-btn v2-btn-primary btn-submit">
+                    <span id="btn-text">Sign In to Dashboard</span>
+                    <span id="btn-arrow">➔</span>
+                </button>
+            </form>
+
+            <div class="role-cards-preview">
+                <div class="role-box">
+                    <div class="role-box-title admin">
+                        <span>🛡️</span> Administrator
+                    </div>
+                    <div>Full dialing control, campaigns, trunk reset & user provisioning.</div>
+                </div>
+                <div class="role-box">
+                    <div class="role-box-title viewer">
+                        <span>👁️</span> Viewer
+                    </div>
+                    <div>Live telemetry, queue monitoring & analytics audit access.</div>
+                </div>
+            </div>
+
+            <div class="login-footer">
+                Protected by HttpOnly JWT Session Tokens & SIP Trunk Safeguards
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if already authenticated
+        async function checkExistingSession() {
+            try {
+                const res = await fetch('/api/v1/auth/me', { credentials: 'include' });
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user && user.email) {
+                        try { localStorage.setItem('uor_user', JSON.stringify(user)); } catch (_) {}
+                        const params = new URLSearchParams(window.location.search);
+                        const dest = params.get('redirect') || '/v2/live';
+                        window.location.href = dest;
+                        return;
+                    }
+                }
+            } catch (_) {}
+        }
+
+        // Dynamic branding adaptation
+        async function fetchBranding() {
+            try {
+                const res = await fetch('/api/v1/system/branding');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.project_name) {
+                        document.getElementById('brand-project').textContent = data.project_name;
+                        document.title = `Sign In - ${data.project_name}`;
+                    }
+                    if (data.organization_name) {
+                        document.getElementById('brand-org').textContent = `${data.organization_name} Telephony Hub`;
+                    }
+                    if (data.default_admin_email) {
+                        document.getElementById('email').placeholder = data.default_admin_email;
+                    }
+                }
+            } catch (_) {}
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const eye = document.getElementById('pass-eye');
+            if (input.type === 'password') {
+                input.type = 'text';
+                eye.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                eye.textContent = '👁️';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-submit');
+            const btnText = document.getElementById('btn-text');
+            const btnArrow = document.getElementById('btn-arrow');
+            const alert = document.getElementById('login-alert');
+            const alertMsg = document.getElementById('login-alert-msg');
+
+            alert.style.display = 'none';
+            btn.disabled = true;
+            btnText.textContent = 'Authenticating...';
+            btnArrow.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    btnText.textContent = 'Verified! Entering...';
+                    if (data.user) {
+                        try { localStorage.setItem('uor_user', JSON.stringify(data.user)); } catch (_) {}
+                    }
+                    const params = new URLSearchParams(window.location.search);
+                    const dest = params.get('redirect') || '/v2/live';
+                    window.location.href = dest;
+                } else {
+                    alert.style.display = 'flex';
+                    alertMsg.textContent = data.detail || 'Invalid email or password.';
+                    btn.disabled = false;
+                    btnText.textContent = 'Sign In to Dashboard';
+                    btnArrow.style.display = 'inline';
+                    document.getElementById('password').focus();
+                }
+            } catch (err) {
+                alert.style.display = 'flex';
+                alertMsg.textContent = 'Connection to gateway timed out. Please try again.';
+                btn.disabled = false;
+                btnText.textContent = 'Sign In to Dashboard';
+                btnArrow.style.display = 'inline';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBranding();
+            checkExistingSession();
+        });
+    </script>
+</body>
+</html>

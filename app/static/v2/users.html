@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Accounts & Access - Outbound Assistant V2</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/v2/css/theme.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/layout.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/components.css?v=2.2">
+</head>
+<body>
+    <div class="app-shell">
+        <div id="sidebar-slot"></div>
+
+        <div class="app-main">
+            <div id="header-slot"></div>
+
+            <main class="app-content">
+                <!-- User Accounts Table Card -->
+                <div class="v2-card">
+                    <div class="v2-card-header">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span>👥 Operator & Administrator Accounts</span>
+                            </div>
+                            <span class="v2-card-subtitle">Active accounts permitted to access the outbound dialer portal</span>
+                        </div>
+                        <button class="v2-btn v2-btn-secondary v2-btn-sm" onclick="fetchUsersList()">
+                            <span>🔄</span>
+                            <span>Refresh Accounts</span>
+                        </button>
+                    </div>
+
+                    <div class="v2-table-wrapper" style="border-left: none; border-right: none; border-radius: 0;">
+                        <table class="v2-table">
+                            <thead>
+                                <tr>
+                                    <th>Account / Name</th>
+                                    <th>Assigned Role</th>
+                                    <th>Privilege Level</th>
+                                    <th>Account Status</th>
+                                    <th>Created Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-tbody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--v2-text-muted); padding: 2rem;">Loading accounts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="v2-modal-overlay" id="create-user-modal">
+        <div class="v2-modal" style="max-width: 580px;">
+            <div class="v2-modal-header">
+                <span class="v2-modal-title">➕ Provision New System Account</span>
+                <button class="v2-modal-close" onclick="closeModal('create-user-modal')">&times;</button>
+            </div>
+            <form onsubmit="handleCreateUserSubmit(event)">
+                <div class="v2-modal-body">
+                    <div class="v2-form-group">
+                        <label class="v2-form-label" for="new-user-email">Institutional Email Address *</label>
+                        <input type="email" id="new-user-email" class="v2-form-control" required placeholder="operator@university.edu.pk">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="v2-form-group">
+                            <label class="v2-form-label" for="new-user-name">Full Name (Optional)</label>
+                            <input type="text" id="new-user-name" class="v2-form-control" placeholder="e.g. Campaign Supervisor">
+                        </div>
+                        <div class="v2-form-group">
+                            <label class="v2-form-label" for="new-user-password">Initial Password *</label>
+                            <input type="password" id="new-user-password" class="v2-form-control" required minlength="6" placeholder="Min 6 characters">
+                        </div>
+                    </div>
+
+                    <div class="v2-form-group">
+                        <label class="v2-form-label">Assign Role Privileges *</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.35rem;">
+                            <!-- Admin Card -->
+                            <div id="role-card-admin" class="kpi-card" style="cursor: pointer; padding: 0.85rem; margin: 0;" onclick="selectRole('admin')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--v2-role-admin);">🛡️ Admin</span>
+                                    <span style="font-size: 0.7rem; color: var(--v2-role-admin); font-weight: 600;">Full Control</span>
+                                </div>
+                                <p style="font-size: 0.74rem; color: var(--v2-text-muted); line-height: 1.35;">
+                                    Complete operational authority: Dialing, CSV queue upload, pause/emergency stop, and managing users.
+                                </p>
+                            </div>
+
+                            <!-- Viewer Card -->
+                            <div id="role-card-viewer" class="kpi-card" style="cursor: pointer; padding: 0.85rem; margin: 0; border-color: var(--v2-role-viewer); background: var(--v2-role-viewer-bg);" onclick="selectRole('viewer')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 700; font-size: 0.9rem; color: var(--v2-role-viewer);">👁️ Viewer</span>
+                                    <span style="font-size: 0.7rem; color: var(--v2-role-viewer); font-weight: 600;">Read-Only</span>
+                                </div>
+                                <p style="font-size: 0.74rem; color: var(--v2-text-muted); line-height: 1.35;">
+                                    Real-time monitoring only: Inspect live calls, queue status, and analytics. All dialing controls locked.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="v2-modal-footer">
+                    <button type="button" class="v2-btn v2-btn-secondary" onclick="closeModal('create-user-modal')">Cancel</button>
+                    <button type="submit" id="btn-submit-create-user" class="v2-btn v2-btn-primary" data-role="admin">
+                        Create User Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/static/v2/js/core/api.js?v=2.2"></script>
+    <script src="/static/v2/js/core/auth.js?v=2.2"></script>
+    <script src="/static/v2/js/core/rbac.js?v=2.2"></script>
+    <script src="/static/v2/js/components/toast.js?v=2.2"></script>
+    <script src="/static/v2/js/components/modal.js?v=2.2"></script>
+    <script src="/static/v2/js/core/shell.js?v=2.2"></script>
+    <script src="/static/v2/js/pages/users.js?v=2.2"></script>
+</body>
+</html>

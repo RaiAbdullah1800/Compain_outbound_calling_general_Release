@@ -1,0 +1,222 @@
+/* ==============================================================================
+   RBAC (ROLE-BASED ACCESS CONTROL) & USER MANAGEMENT STYLES (Frontend v2)
+   ============================================================================== */
+
+/* --- Role Badges --- */
+.user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full, 9999px);
+    line-height: 1.2;
+    transition: all 0.2s ease;
+}
+
+.user-role-badge.role-admin {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.25));
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    color: #c084fc;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.25);
+}
+
+.user-role-badge.role-viewer {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 182, 212, 0.2));
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    color: #38bdf8;
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.2);
+}
+
+/* --- Viewer Restricted / Locked Elements --- */
+.rbac-locked {
+    opacity: 0.42 !important;
+    cursor: not-allowed !important;
+    filter: grayscale(0.5);
+    pointer-events: none !important;
+    position: relative;
+    user-select: none;
+}
+
+.rbac-locked::after {
+    content: "🔒";
+    margin-left: 0.35rem;
+    font-size: 0.85em;
+}
+
+.rbac-hidden {
+    display: none !important;
+}
+
+/* Wrapper for locked buttons to preserve tooltip and cursor */
+.rbac-lock-tooltip-wrapper {
+    display: inline-flex;
+    position: relative;
+    cursor: not-allowed;
+}
+
+.rbac-lock-tooltip-wrapper[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #f8fafc;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+}
+
+.rbac-lock-tooltip-wrapper:hover[data-tooltip]::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* --- Viewer Read-Only Banner --- */
+.viewer-notice-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, rgba(14, 165, 233, 0.12), rgba(99, 102, 241, 0.12));
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    color: #93c5fd;
+    font-size: 0.85rem;
+}
+
+.viewer-notice-banner .banner-text {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* --- User Management Modal Specifics --- */
+.user-mgmt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-mgmt-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-mgmt-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.user-mgmt-tab-btn.active {
+    background: #1e293b;
+    color: #f8fafc;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.user-list-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-list-table th {
+    background: rgba(15, 23, 42, 0.7);
+    color: #94a3b8;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-list-table td {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.user-list-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Role Selector Radio/Cards */
+.role-choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+.role-choice-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.role-choice-card:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.role-choice-card.selected {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.12);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.2);
+}
+
+.role-choice-card.selected.role-viewer-card {
+    border-color: #0ea5e9;
+    background: rgba(14, 165, 233, 0.12);
+    box-shadow: 0 0 14px rgba(14, 165, 233, 0.2);
+}
+
+.role-choice-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.role-choice-desc {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    line-height: 1.35;
+}

@@ -1,0 +1,17 @@
+# Runtime Configuration & Databases
+.env
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs & Temp
+logs/
+*.log
+__pycache__/
+.pytest_cache/
+
+# Credentials
+*.json
+!app/

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Admin & Control Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/rbac.css">
+    <style>
+        :root {
+            --bg-primary: #0a0d14;
+            --bg-card: rgba(20, 27, 44, 0.75);
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(239, 68, 68, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(59, 130, 246, 0.1) 0%, transparent 40%);
+        }
+
+        .container { max-width: 1320px; margin: 0 auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .title-group h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f87171, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .title-group p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+        .admin-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h2 { font-size: 1.15rem; font-weight: 600; }
+
+        /* Campaign Worker Toggle Switch */
+        .status-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-resume {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        /* 10 Extension DIDs Suite Monitor Grid */
+        .ext-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .ext-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem;
+            text-align: center;
+        }
+
+        .ext-card.active-shift {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .ext-num { font-weight: 700; font-size: 1.05rem; }
+        .ext-did { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .ext-status { font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; padding: 0.2rem 0.4rem; border-radius: 4px; display: inline-block; }
+        .ext-idle { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .ext-busy { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+        /* Action Buttons */
+        .btn-action {
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .btn-upload { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-call { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .btn-dashboard { background: rgba(255, 255, 255, 0.08); color: var(--text-main); border: 1px solid var(--border-color); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        td { padding: 0.85rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="title-group">
+                <h1>Asterisk Outbound Admin & Control Center</h1>
+                <p>System Diagnostics, Campaign Pause/Resume, CSV Upload & Extension Suite Monitor</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                <div id="user-profile-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); padding: 0 0.85rem; height: 38px; border-radius: 8px; font-size: 0.82rem; white-space: nowrap;">
+                    <span style="color: #60a5fa;">👤</span>
+                    <span id="header-user-email" style="font-weight: 600; color: #f3f4f6;">Loading...</span>
+                    <span id="header-user-role" class="user-role-badge role-admin">ADMIN</span>
+                </div>
+                <button id="btn-manage-users" onclick="openUserModal()" style="display: none; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; height: 38px; padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap;">
+                    <span>👥</span>
+                    <span>Manage Users</span>
+                </button>
+                <span class="admin-badge" style="height: 38px; display: inline-flex; align-items: center; margin: 0;">SYSTEM CONTROLLER</span>
+                <a href="/dashboard" class="btn-action btn-dashboard" style="text-decoration: none; width: auto; height: 38px; padding: 0 1rem; margin: 0; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; font-size: 0.82rem;">
+                    📊 Open Dashboard
+                </a>
+                <a href="/v2/controller" class="btn-action" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; width: auto; height: 38px; padding: 0 1rem; margin: 0; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; font-size: 0.82rem; border-radius: 10px;" title="Switch to Modern V2 Controller">
+                    🚀 Switch to V2
+                </a>
+                <button onclick="handleLogout()" style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-muted); height: 38px; padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap;" title="Sign out">
+                    🚪 Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Viewer Read-Only Information Banner -->
+        <div id="viewer-notice-banner" class="viewer-notice-banner" style="display: none;">
+            <div class="banner-text">
+                <span style="font-size: 1.25rem;">👁️</span>
+                <span><strong>Viewer Mode:</strong> Extension monitoring and system telemetry are active. Dispatch controller, CSV batch uploads, manual calls, and queue purging are locked for Administrators.</span>
+            </div>
+            <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);">Read-Only Mode</span>
+        </div>
+
+        <div class="control-grid">
+            <!-- Left Column: Controls & Extension Suite -->
+            <div>
+                <!-- Worker Control Switch -->
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <h2>Campaign Dispatch Controller</h2>
+                        <span id="shift-indicator" style="color: var(--accent-purple); font-weight: 600; font-size: 0.9rem;">SHIFT: LOADING...</span>
+                    </div>
+
+                    <div class="status-box">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.1rem;" id="worker-status-text">Worker Status: RUNNING</div>
+                            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                                Operating Window: 10:00 AM – 08:00 PM PKT | Capacity: 5 Channels
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="toggle-worker-btn" class="btn-pause" data-role="admin" onclick="toggleCampaignWorker()">
+                                ⏸️ PAUSE CAMPAIGN
+                            </button>
+                            <button class="btn-pause" data-role="admin" style="background: linear-gradient(135deg, #b91c1c, #991b1b);" onclick="triggerEmergencyStop()">
+                                🛑 EMERGENCY STOP
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.5rem;">10 EXTENSION DIDS SUITE & SHIFT MONITOR</h3>
+                    <div class="ext-grid" id="ext-grid-container">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Admin Actions -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Admin Actions</h2>
+                    </div>
+
+                    <button class="btn-action btn-upload" data-role="admin" onclick="document.getElementById('csv-input').click()">
+                        📁 Upload CSV Lead Batch
+                    </button>
+                    <input type="file" id="csv-input" accept=".csv" style="display: none;" onchange="uploadCSV(event)">
+
+                    <button class="btn-action btn-call" data-role="admin" onclick="triggerManualCall()">
+                        📞 Make Manual Single Call
+                    </button>
+
+                    <button class="btn-action" data-role="admin" style="background: linear-gradient(135deg, #ef4444, #b91c1c);" onclick="clearQueue()">
+                        🗑️ Clear Outbound Call Queue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modular Frontend v2 Core Modules -->
+    <script src="/static/js/core/api.js"></script>
+    <script src="/static/js/core/auth.js"></script>
+    <script src="/static/js/components/toast.js"></script>
+    <script src="/static/js/core/rbac.js"></script>
+    <script src="/static/js/components/user-modal.js"></script>
+
+    <script>
+        // Authentication Guard & RBAC Initialization
+        async function checkAuth() {
+            try {
+                const user = await window.authService.checkAuth();
+                if (user) {
+                    window.rbac.init(user);
+                }
+                return user;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function handleLogout() {
+            await window.authService.logout();
+        }
+
+        checkAuth();
+
+        // Dynamic Branding & Metadata Adaptation (12-Factor Multi-Deployment)
+        window.systemExtensionSuite = null;
+        async function loadBranding() {
+            try {
+                const res = await fetch('/api/v1/system/branding');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.project_name) {
+                        const h1 = document.querySelector('.title-group h1');
+                        if (h1) h1.innerText = `${data.project_name} Control Center`;
+                        document.title = `Admin - ${data.project_name}`;
+                    }
+                    if (data.extension_suite && data.extension_suite.length > 0) {
+                        window.systemExtensionSuite = data.extension_suite;
+                        if (window.lastActiveLines) {
+                            renderExtensions(window.lastActiveLines);
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+        loadBranding();
+
+        let isPaused = false;
+
+        async function loadCampaignStatus() {
+            try {
+                const res = await fetch('/api/v1/campaigns/status');
+                const data = await res.json();
+
+                isPaused = data.is_paused;
+                const statusText = document.getElementById('worker-status-text');
+                const toggleBtn = document.getElementById('toggle-worker-btn');
+                const shiftIndicator = document.getElementById('shift-indicator');
+
+                shiftIndicator.innerText = `ACTIVE: ${data.current_shift}`;
+
+                if (data.circuit_breaker && data.circuit_breaker.is_active) {
+                    const remMins = Math.ceil(data.circuit_breaker.remaining_seconds / 60);
+                    statusText.innerText = `Worker Status: 🛑 CARRIER REST (${remMins}m Cooldown)`;
+                    toggleBtn.className = "btn-resume";
+                    toggleBtn.innerHTML = "▶️ OVERRIDE & RESUME NOW";
+                    toggleBtn.onclick = async () => {
+                        await fetch('/api/v1/campaigns/circuit-breaker/resume', { method: 'POST' });
+                        loadCampaignStatus();
+                    };
+                } else if (isPaused) {
+                    statusText.innerText = "Worker Status: PAUSED 🔴";
+                    toggleBtn.className = "btn-resume";
+                    toggleBtn.innerHTML = "▶️ RESUME CAMPAIGN";
+                    toggleBtn.onclick = toggleWorker;
+                } else {
+                    const streak = data.circuit_breaker && data.circuit_breaker.consecutive_declines > 0 ? ` (Declines: ${data.circuit_breaker.consecutive_declines}/20)` : '';
+                    statusText.innerText = `Worker Status: RUNNING 🟢${streak}`;
+                    toggleBtn.className = "btn-pause";
+                    toggleBtn.innerHTML = "⏸️ PAUSE CAMPAIGN";
+                    toggleBtn.onclick = toggleWorker;
+                }
+
+                window.lastActiveLines = data.active_lines;
+                renderExtensions(data.active_lines);
+            } catch (err) {
+                console.error("Error fetching campaign status:", err);
+            }
+        }
+
+        function renderExtensions(activeLines) {
+            const suite = window.systemExtensionSuite || [
+                {ext: "2800", caller_id: "0518490090"},
+                {ext: "2801", caller_id: "0518490290"},
+                {ext: "2802", caller_id: "0518490300"},
+                {ext: "2803", caller_id: "0518490500"},
+                {ext: "2804", caller_id: "0518490590"},
+                {ext: "2805", caller_id: "0518490600"},
+                {ext: "2806", caller_id: "0518490690"},
+                {ext: "2807", caller_id: "0518490990"},
+                {ext: "2808", caller_id: "0518491490"},
+                {ext: "2809", caller_id: "0518491590"}
+            ];
+
+            const activeExts = (activeLines || []).map(l => l.ext);
+            const container = document.getElementById('ext-grid-container');
+            container.innerHTML = '';
+
+            suite.forEach(item => {
+                const isActive = activeExts.includes(item.ext);
+                const card = document.createElement('div');
+                card.className = `ext-card ${isActive ? 'active-shift' : ''}`;
+                card.innerHTML = `
+                    <div class="ext-num">Ext ${item.ext}</div>
+                    <div class="ext-did">${item.caller_id}</div>
+                    <div class="ext-status ${isActive ? 'ext-idle' : 'ext-busy'}">
+                        ${isActive ? 'ACTIVE SHIFT' : 'RESTING'}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function toggleCampaignWorker() {
+            if (!window.rbac.checkPermission('pause or resume campaign')) return;
+            const newPausedState = !isPaused;
+            isPaused = newPausedState;
+            const endpoint = newPausedState ? '/api/v1/campaigns/pause' : '/api/v1/campaigns/resume';
+            
+            const statusText = document.getElementById('worker-status-text');
+            const toggleBtn = document.getElementById('toggle-worker-btn');
+            if (newPausedState) {
+                statusText.innerText = "Worker Status: PAUSED 🔴";
+                toggleBtn.className = "btn-resume";
+                toggleBtn.innerHTML = "▶️ RESUME CAMPAIGN";
+            } else {
+                statusText.innerText = "Worker Status: RUNNING 🟢";
+                toggleBtn.className = "btn-pause";
+                toggleBtn.innerHTML = "⏸️ PAUSE CAMPAIGN";
+            }
+
+            try {
+                await fetch(endpoint, { method: 'POST' });
+                await loadCampaignStatus();
+            } catch (err) {
+                alert("Error toggling campaign worker: " + err.message);
+            }
+        }
+        async function triggerEmergencyStop() {
+            if (!window.rbac.checkPermission('trigger emergency stop')) return;
+            if (!confirm("🛑 EMERGENCY STOP:\nAre you sure you want to PAUSE the worker and HANGUP all active calls immediately?")) return;
+            try {
+                const res = await fetch('/api/v1/campaigns/emergency-stop', { method: 'POST' });
+                const data = await res.json();
+                alert(`🛑 ${data.message || 'Emergency stop executed!'}`);
+                await loadCampaignStatus();
+            } catch (err) {
+                alert("Error executing emergency stop: " + err.message);
+            }
+        }
+
+        async function uploadCSV(event) {
+            if (!window.rbac.checkPermission('upload CSV lead batch')) {
+                event.target.value = '';
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/v1/contacts/upload-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                alert(`✅ Successfully loaded CSV!\nAdded ${data.queued_calls !== undefined ? data.queued_calls : (data.imported_contacts || 0)} leads to queue.`);
+            } catch (err) {
+                alert("Error uploading CSV file: " + err.message);
+            }
+        }
+
+        async function triggerManualCall() {
+            if (!window.rbac.checkPermission('trigger manual call')) return;
+            const phone = prompt("Enter your mobile phone number to test call (e.g., 03XXXXXXXXX):", "");
+            if (!phone || phone.trim() === '') return;
+
+            try {
+                const res = await fetch('/api/v1/calls/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to_number: phone })
+                });
+                if (res.ok) alert(`📞 Call initiated to ${phone}!`);
+            } catch (err) {
+                alert("Failed to trigger call: " + err.message);
+            }
+        }
+
+        async function clearQueue() {
+            if (!window.rbac.checkPermission('clear outbound call queue')) return;
+            if (!confirm("⚠️ Are you sure you want to clear all pending calls from the queue?")) return;
+
+            try {
+                const res = await fetch('/api/v1/campaigns/clear-queue', { method: 'DELETE' });
+                const data = await res.json();
+                alert(`🗑️ ${data.message || 'Queue cleared!'}`);
+            } catch (err) {
+                alert("Error clearing queue: " + err.message);
+            }
+        }
+
+        loadCampaignStatus();
+
+        // Safety poll every 10s only when active tab
+        setInterval(() => {
+            if (!document.hidden) {
+                loadCampaignStatus();
+            }
+        }, 10000);
+
+        // Refresh when user switches back to admin tab
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                loadCampaignStatus();
+            }
+        });
+    </script>
+</body>
+</html>

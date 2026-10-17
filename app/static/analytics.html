@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telephony Analytics & DID Performance | Outbound Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/rbac.css">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-accent: #3b82f6;
+            --purple-accent: #8b5cf6;
+            --emerald-accent: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 1.5rem;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Navigation */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem 1.75rem;
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .nav-btn {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Metric Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-subtext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+
+        /* Card Container */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.75rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Table Styling */
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-shift-a {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-shift-b {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .badge-high {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .badge-mid {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge-low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Header Navigation -->
+        <div class="header-bar">
+            <div class="header-title">
+                <h1>📊 Telephony Analytics & DID Performance</h1>
+                <p>Real-Time Active Duration & Caller ID Optimization Suite</p>
+            </div>
+            <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+                <div id="user-profile-badge" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); padding: 0 0.85rem; height: 38px; border-radius: 8px; font-size: 0.82rem; white-space: nowrap;">
+                    <span style="color: #60a5fa;">👤</span>
+                    <span id="header-user-email" style="font-weight: 600; color: #f3f4f6;">Loading...</span>
+                    <span id="header-user-role" class="user-role-badge role-admin">ADMIN</span>
+                </div>
+                <button id="btn-manage-users" onclick="openUserModal()" style="display: none; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; height: 38px; padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap;">
+                    <span>👥</span>
+                    <span>Manage Users</span>
+                </button>
+                <button onclick="fetchAnalyticsData()" style="background: rgba(255, 255, 255, 0.08); color: white; border: 1px solid var(--border-color); height: 38px; padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap;">
+                    🔄 Refresh Metrics
+                </button>
+                <a href="/dashboard" class="nav-btn" style="height: 38px; padding: 0 1rem; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; font-size: 0.82rem; border-radius: 8px; text-decoration: none;">
+                    📋 Return to Dashboard
+                </a>
+                <a href="/v2/analytics" class="nav-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: 1px solid rgba(255, 255, 255, 0.2); height: 38px; padding: 0 1rem; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap; font-size: 0.82rem; border-radius: 8px; text-decoration: none;" title="Switch to Modern V2 Analytics">
+                    🚀 Switch to V2
+                </a>
+                <button onclick="handleLogout()" style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-muted); height: 38px; padding: 0 1rem; border-radius: 8px; font-weight: 600; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; white-space: nowrap;" title="Sign out">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Date Range Filter Control Bar -->
+        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; backdrop-filter: blur(12px);">
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
+                    📅 Date Range Filter:
+                </span>
+                <select id="date-preset-select" onchange="handlePresetChange()" style="background: #0f172a; border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 8px; padding: 0.5rem 0.85rem; color: #f8fafc; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                    <option value="all_time" selected>All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="custom">Custom Date Range</option>
+                </select>
+
+                <div id="custom-date-container" style="display: none; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <input type="date" id="start-date-input" style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.45rem 0.75rem; color: white; font-size: 0.85rem;" onchange="fetchAnalyticsData()">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
+                    <input type="date" id="end-date-input" style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.45rem 0.75rem; color: white; font-size: 0.85rem;" onchange="fetchAnalyticsData()">
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                ⚡ Billing Rule: <strong style="color: #60a5fa;">60-Second Pulse Ceiling per Call</strong>
+            </div>
+        </div>
+
+        <!-- Macro KPI Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Outbound Dialed</div>
+                <div class="stat-value" id="kpi-total-dialed">0</div>
+                <div class="stat-subtext">Completed + Attempted calls</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Overall Answer Rate</div>
+                <div class="stat-value" style="color: #60a5fa;" id="kpi-answer-rate">0.0%</div>
+                <div class="stat-subtext" id="kpi-answered-count">0 calls answered</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Total Active Call Duration</div>
+                <div class="stat-value" style="color: #34d399;" id="kpi-total-duration">0s</div>
+                <div class="stat-subtext" id="kpi-avg-duration-sub">Avg: 0.0s per answered call</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">💳 Carrier Billed Minutes</div>
+                <div class="stat-value" style="color: #60a5fa;" id="kpi-billed-minutes">0 Mins</div>
+                <div class="stat-subtext">Per-call 60s pulse billing</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Mid-Call Drop-off Rate</div>
+                <div class="stat-value" style="color: #fbbf24;" id="kpi-drop-rate">0.0%</div>
+                <div class="stat-subtext" id="kpi-drops-count">0 mid-call hangups</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Interested Leads (DTMF 1)</div>
+                <div class="stat-value" style="color: #c084fc;" id="kpi-leads-count">0</div>
+                <div class="stat-subtext" id="kpi-conversion-rate">0.0% conversion rate</div>
+            </div>
+        </div>
+
+        <!-- DID Line Performance Matrix -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    📞 DID Line Performance & Answer Rates (Extensions 2800 – 2809)
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Rotates every 1 hour (Shift A vs Shift B)</span>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Extension</th>
+                            <th>Outbound DID Number</th>
+                            <th>Shift Group</th>
+                            <th>Total Dialed</th>
+                            <th>Answered Calls</th>
+                            <th>Answer Rate %</th>
+                            <th>Total Active Duration</th>
+                            <th>Carrier Billed Mins</th>
+                            <th>Mid-Call Drops</th>
+                            <th>Leads Converted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="did-table-body">
+                        <tr>
+                            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading DID performance data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Hourly Call & Pickup Distribution Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    🕒 Hourly Pickup & Active Time Distribution (24-Hour)
+                </div>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hour Window</th>
+                            <th>Calls Dialed</th>
+                            <th>Calls Answered</th>
+                            <th>Hourly Answer Rate</th>
+                            <th>Leads Generated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hourly-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading hourly distribution data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modular Frontend v2 Core Modules -->
+    <script src="/static/js/core/api.js"></script>
+    <script src="/static/js/core/auth.js"></script>
+    <script src="/static/js/components/toast.js"></script>
+    <script src="/static/js/core/rbac.js"></script>
+    <script src="/static/js/components/user-modal.js"></script>
+
+    <script>
+        // Authentication Guard & RBAC Initialization
+        async function checkAuth() {
+            try {
+                const user = await window.authService.checkAuth();
+                if (user) {
+                    window.rbac.init(user);
+                }
+                return user;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function handleLogout() {
+            await window.authService.logout();
+        }
+
+        checkAuth();
+
+        // Dynamic Branding & Metadata Adaptation (12-Factor Multi-Deployment)
+        window.systemShiftALabel = 'Shift A';
+        window.systemShiftBLabel = 'Shift B';
+        async function loadBranding() {
+            try {
+                const res = await fetch('/api/v1/system/branding');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.project_name) {
+                        const h1 = document.querySelector('.title-group h1');
+                        if (h1) h1.innerText = `${data.project_name} Performance Analytics`;
+                        document.title = `Analytics - ${data.project_name}`;
+                    }
+                    if (data.shift_a_label) window.systemShiftALabel = data.shift_a_label;
+                    if (data.shift_b_label) window.systemShiftBLabel = data.shift_b_label;
+                    if (data.extension_range_label) {
+                        const titleEl = document.querySelector('.card-header .card-title');
+                        if (titleEl) titleEl.innerText = `📞 DID Line Performance & Answer Rates (Extensions ${data.extension_range_label})`;
+                    }
+                }
+            } catch (e) {}
+        }
+        loadBranding();
+
+        function handlePresetChange() {
+            const preset = document.getElementById('date-preset-select').value;
+            const customContainer = document.getElementById('custom-date-container');
+            if (preset === 'custom') {
+                customContainer.style.display = 'inline-flex';
+            } else {
+                customContainer.style.display = 'none';
+                fetchAnalyticsData();
+            }
+        }
+
+        function getQueryParams() {
+            const preset = document.getElementById('date-preset-select').value;
+            let query = `preset=${preset}`;
+            if (preset === 'custom') {
+                const startDate = document.getElementById('start-date-input').value;
+                const endDate = document.getElementById('end-date-input').value;
+                if (startDate) query += `&start_date=${startDate}`;
+                if (endDate) query += `&end_date=${endDate}`;
+            }
+            return query;
+        }
+
+        async function fetchAnalyticsData() {
+            try {
+                const query = getQueryParams();
+
+                // 1. Fetch Overview
+                const resOverview = await fetch(`/api/v1/analytics/overview?${query}`);
+                if (resOverview.ok) {
+                    const data = await resOverview.json();
+                    document.getElementById('kpi-total-dialed').innerText = data.total_dialed.toLocaleString();
+                    document.getElementById('kpi-answer-rate').innerText = `${data.answer_rate_pct}%`;
+                    document.getElementById('kpi-answered-count').innerText = `${data.total_answered.toLocaleString()} calls answered`;
+                    document.getElementById('kpi-total-duration').innerText = data.total_duration_formatted || `${data.total_duration_sec}s`;
+                    document.getElementById('kpi-avg-duration-sub').innerText = `Avg: ${data.avg_duration_sec}s per answered call`;
+                    document.getElementById('kpi-billed-minutes').innerText = `${(data.total_billed_minutes || 0).toLocaleString()} Mins`;
+                    document.getElementById('kpi-drop-rate').innerText = `${data.mid_call_drop_rate_pct}%`;
+                    document.getElementById('kpi-drops-count').innerText = `${data.mid_call_drops.toLocaleString()} mid-call hangups`;
+                    document.getElementById('kpi-leads-count').innerText = data.interested_leads.toLocaleString();
+                    document.getElementById('kpi-conversion-rate').innerText = `${data.conversion_rate_pct}% conversion rate`;
+                }
+
+                // 2. Fetch DID Performance
+                const resDid = await fetch(`/api/v1/analytics/did-performance?${query}`);
+                if (resDid.ok) {
+                    const dids = await resDid.json();
+                    renderDidTable(dids);
+                }
+
+                // 3. Fetch Hourly Distribution
+                const resHourly = await fetch(`/api/v1/analytics/hourly-distribution?${query}`);
+                if (resHourly.ok) {
+                    const hourly = await resHourly.json();
+                    renderHourlyTable(hourly);
+                }
+            } catch (err) {
+                console.error("Error fetching analytics metrics:", err);
+            }
+        }
+
+        function renderDidTable(dids) {
+            const tbody = document.getElementById('did-table-body');
+            if (dids.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No DID call data available for this range.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = dids.map(d => {
+                const shiftBadge = d.shift_group === 'SHIFT_A' 
+                    ? `<span class="badge badge-shift-a">${window.systemShiftALabel || 'Shift A'}</span>` 
+                    : `<span class="badge badge-shift-b">${window.systemShiftBLabel || 'Shift B'}</span>`;
+
+                let rateBadgeClass = 'badge-high';
+                if (d.answer_rate_pct < 40) rateBadgeClass = 'badge-low';
+                else if (d.answer_rate_pct < 60) rateBadgeClass = 'badge-mid';
+
+                const formattedDur = (d.total_duration_formatted && d.total_duration_formatted !== 'undefined') 
+                    ? d.total_duration_formatted 
+                    : (d.total_duration_sec ? `${d.total_duration_sec}s` : '0s');
+                const avgSec = d.avg_duration_sec !== undefined ? d.avg_duration_sec : 0;
+                const billedMins = d.total_billed_minutes !== undefined ? d.total_billed_minutes : 0;
+
+                return `
+                    <tr>
+                        <td style="font-weight: 700; color: #f8fafc;">Ext ${d.extension}</td>
+                        <td style="font-weight: 600; color: #a78bfa;">${d.did_number}</td>
+                        <td>${shiftBadge}</td>
+                        <td style="font-weight: 600;">${d.total_dialed}</td>
+                        <td style="color: #60a5fa; font-weight: 600;">${d.total_answered}</td>
+                        <td><span class="badge ${rateBadgeClass}">${d.answer_rate_pct}%</span></td>
+                        <td style="font-weight: 600; color: #34d399;">${formattedDur} <span style="font-size: 0.75rem; color: var(--text-muted);">(${avgSec}s avg)</span></td>
+                        <td style="font-weight: 700; color: #60a5fa;">${billedMins} Mins</td>
+                        <td style="color: #fbbf24;">${d.mid_call_drops}</td>
+                        <td style="font-weight: 700; color: #c084fc;">${d.interested_leads}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderHourlyTable(hourly) {
+            const tbody = document.getElementById('hourly-table-body');
+            const activeHours = hourly.filter(h => h.dialed > 0);
+
+            if (activeHours.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No hourly campaign data available.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = activeHours.map(h => {
+                const rate = h.dialed > 0 ? (h.answered / h.dialed * 100).toFixed(1) : '0.0';
+                return `
+                    <tr>
+                        <td style="font-weight: 700; color: #f8fafc;">${h.hour} PKT</td>
+                        <td style="font-weight: 600;">${h.dialed}</td>
+                        <td style="color: #60a5fa; font-weight: 600;">${h.answered}</td>
+                        <td><span class="badge badge-shift-a">${rate}%</span></td>
+                        <td style="font-weight: 700; color: #c084fc;">${h.leads}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Fetch metrics on initial page load
+        fetchAnalyticsData();
+
+        // Background refresh every 45s (pauses automatically when tab is hidden)
+        setInterval(() => {
+            if (!document.hidden) {
+                fetchAnalyticsData();
+            }
+        }, 45000);
+
+        // Instantly refresh when switching back to analytics tab
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                fetchAnalyticsData();
+            }
+        });
+    </script>
+</body>
+</html>

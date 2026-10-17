@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asterisk Outbound Campaign Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/rbac.css">
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-card: rgba(23, 31, 48, 0.7);
+            --bg-card-hover: rgba(30, 41, 64, 0.8);
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+
+        .title-group h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .title-group p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            height: 38px;
+            padding: 0 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .header-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .header-btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+        }
+        .header-btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .header-btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .header-btn-success:hover {
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.45);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .header-btn-controller {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        .header-btn-controller:hover {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #ffffff;
+        }
+
+        .header-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 0.25rem;
+        }
+
+        .header-user-pill {
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            padding: 0 0.85rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .header-user-pill .user-role-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .header-btn-logout {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+        .header-btn-logout:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+
+        .btn-trigger {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            padding: 0.55rem 1.1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+        }
+        .btn-trigger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .stat-value.green { color: var(--accent-green); }
+        .stat-value.blue { color: var(--accent-blue); }
+        .stat-value.yellow { color: var(--accent-yellow); }
+        .stat-value.red { color: var(--accent-red); }
+
+        /* Leads Table Section */
+        .table-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .table-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .table-scroll-container {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .pagination-bar {
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.25);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-page {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-page:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge-live::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 1.1rem 1.5rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* DTMF Pill Badges */
+        .pill-dtmf {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.85rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .pill-dtmf.pressed-1 {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .pill-dtmf.skipped {
+            background: rgba(156, 163, 175, 0.15);
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, 0.3);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-completed { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .status-answered { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .status-ringing { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .status-declined { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .status-no-answer { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+        .status-disconnected-mid-call { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .status-in-progress { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+        @keyframes pulseAlert {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.25); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: #131b2e;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            padding: 1.75rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-action-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            color: #f3f4f6;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+        .btn-action-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .btn-action-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+        .btn-action-danger:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.28);
+            border-color: #ef4444;
+        }
+        .btn-action-danger:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-skip-call {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-skip-call:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="title-group">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <h1>TUF Outbound Campaign Dashboard</h1>
+                    <div class="badge-live" style="margin: 0;">LIVE MONITOR</div>
+                </div>
+                <p>Live Real-Time Call Monitor, DTMF Interest Tracking & Shift Controller</p>
+            </div>
+
+            <div class="header-actions">
+                <!-- Action Buttons (Admin Only) -->
+                <button class="header-btn header-btn-primary" data-role="admin" onclick="openModal()" title="Initiate a single outbound call">
+                    <span>📞</span>
+                    <span>Initiate Call</span>
+                </button>
+
+                <button class="header-btn header-btn-success" data-role="admin" onclick="document.getElementById('csv-upload-input').click()" title="Upload CSV lead contacts to queue">
+                    <span>📁</span>
+                    <span>Upload CSV</span>
+                </button>
+                <input type="file" id="csv-upload-input" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)">
+
+                <a href="/admin" class="header-btn header-btn-controller" title="Open Campaign Controller & Extensions Monitor">
+                    <span>⚙️</span>
+                    <span>Campaign Controller</span>
+                </a>
+
+                <a href="/v2/live" class="header-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: 1px solid rgba(255, 255, 255, 0.2); text-decoration: none;" title="Switch to Modern V2 Flight Monitor">
+                    <span>🚀</span>
+                    <span>Switch to V2</span>
+                </a>
+
+                <!-- User Management Modal Trigger (Admin Only) -->
+                <button id="btn-manage-users" class="header-btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; display: none;" onclick="openUserModal()" title="Manage User Accounts & Roles (Admin)">
+                    <span>👥</span>
+                    <span>Manage Users</span>
+                </button>
+
+                <!-- Vertical Divider -->
+                <div class="header-divider"></div>
+
+                <!-- User Account Profile -->
+                <div class="header-user-pill" id="user-profile-badge">
+                    <span style="color: #60a5fa;">👤</span>
+                    <span id="header-user-email" style="font-weight: 600; color: #f3f4f6;">Loading...</span>
+                    <span id="header-user-role" class="user-role-badge role-admin">ADMIN</span>
+                </div>
+
+                <!-- Logout Button -->
+                <button class="header-btn header-btn-logout" onclick="handleLogout()" title="Sign out of your session">
+                    <span>🚪</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Viewer Read-Only Information Banner -->
+        <div id="viewer-notice-banner" class="viewer-notice-banner" style="display: none;">
+            <div class="banner-text">
+                <span style="font-size: 1.25rem;">👁️</span>
+                <span><strong>Viewer Mode:</strong> Real-time monitoring and analytics are active. Outbound call triggering, queue modifications, and campaign state toggles require Administrator access.</span>
+            </div>
+            <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);">Read-Only Mode</span>
+        </div>
+
+        <!-- Carrier Circuit Breaker Alert Banner (Nayatel 30-min Rate-Limit Cool-Down) -->
+        <div id="dash-circuit-breaker-banner" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; backdrop-filter: blur(12px); animation: pulseAlert 2s infinite;">
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+                <span style="font-size: 1.5rem;">🛑</span>
+                <div>
+                    <div style="font-weight: 800; font-size: 0.95rem; color: #f87171; letter-spacing: 0.02em;">
+                        CARRIER CIRCUIT BREAKER ACTIVE (NAYATEL RATE-LIMIT PROTECTION)
+                    </div>
+                    <div id="dash-circuit-breaker-subtext" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem;">
+                        20 consecutive declines detected. Outbound dialing resting for 30 minutes to protect SIP trunk.
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #fbbf24; font-weight: 700;">AUTO-RESUMES IN</span>
+                    <span id="dash-circuit-breaker-timer" style="font-family: monospace; font-size: 1.15rem; font-weight: 800; color: #fbbf24; background: rgba(0,0,0,0.4); padding: 0.25rem 0.75rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);">
+                        30:00
+                    </span>
+                </div>
+                <button data-role="admin" onclick="resumeCircuitBreaker(this)" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.55rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); transition: all 0.2s ease;">
+                    ▶️ Force Resume Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Campaign Controller Bar -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(12px);">
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <span style="font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-muted);">CAMPAIGN STATUS:</span>
+                <span id="dash-campaign-status" style="font-weight: 700; font-size: 0.9rem; padding: 0.3rem 0.85rem; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    🟢 RUNNING
+                </span>
+
+                <span style="font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-muted); margin-left: 0.5rem;">NAYATEL TRUNK:</span>
+                <span id="dash-trunk-status" style="font-weight: 700; font-size: 0.9rem; padding: 0.3rem 0.85rem; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    🟢 ONLINE
+                </span>
+
+                <span id="dash-circuit-breaker-badge" style="display: none; font-weight: 700; font-size: 0.85rem; padding: 0.3rem 0.85rem; border-radius: 20px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">
+                    ⚠️ Declines: 0/20
+                </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button id="dash-toggle-pause-btn" data-role="admin" onclick="togglePauseCampaign()" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease;">
+                    ⏸️ Pause Campaign
+                </button>
+                <button data-role="admin" onclick="triggerEmergencyStop()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); transition: all 0.2s ease;">
+                    🛑 Emergency Stop & Hangup
+                </button>
+            </div>
+        </div>
+
+        <!-- Targeted NO_ANSWER Re-iteration Control Panel -->
+        <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; backdrop-filter: blur(12px);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <span style="font-weight: 700; font-size: 0.85rem; letter-spacing: 0.05em; color: #a78bfa;">🔄 TARGETED NO-ANSWER RE-ITERATION:</span>
+                <select id="reiterate-level-select" style="background: #0f172a; border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 8px; padding: 0.5rem 0.85rem; color: #f8fafc; font-size: 0.85rem; font-weight: 600;">
+                    <option value="0">Attempt #0 (Initial Missed Calls) -> 0 calls</option>
+                    <option value="1">Attempt #1 (1st Retry Missed Calls) -> 0 calls</option>
+                    <option value="2">Attempt #2 (2nd Retry Missed Calls) -> 0 calls</option>
+                </select>
+            </div>
+            <button data-role="admin" onclick="executeTargetedReiteration()" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; padding: 0.55rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3); transition: all 0.2s ease;">
+                🚀 Re-queue Target Attempt Level
+            </button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button id="tab-analytics" onclick="switchTab('analytics')" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;">
+                    📊 Call Analytics & History
+                </button>
+                <button id="tab-queue" onclick="switchTab('queue')" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;">
+                    📋 Call Queue & Operating Schedule
+                </button>
+                <button id="tab-voices" onclick="switchTab('voices')" style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-color); padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;">
+                    🎙️ Voice Presets & Audio Library
+                </button>
+            </div>
+            <a href="/analytics" style="text-decoration: none; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3); transition: all 0.2s ease;">
+                📈 Open DID Performance & Advanced Analytics Page ➔
+            </a>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="section-analytics">
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Outbound Calls</span>
+                    <span class="stat-value blue" id="stat-total">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Pressed '1' (Interested)</span>
+                    <span class="stat-value green" id="stat-pressed-1">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Skipped / No Press</span>
+                    <span class="stat-value yellow" id="stat-skipped">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Conversion Rate</span>
+                    <span class="stat-value red" id="stat-conversion">0%</span>
+                </div>
+            </div>
+
+            <!-- Filter Bar & Table Card -->
+            <div class="table-card">
+                <div class="table-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <h2>Call Logs & Candidate Response</h2>
+                    
+                    <!-- Filter Controls -->
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="search-input" oninput="onSearchInput()" placeholder="🔍 Search Name / Mobile..." style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.85rem; color: white; font-size: 0.85rem; min-width: 200px;">
+                        
+                        <select id="status-filter" onchange="onFilterChange()" style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.85rem; color: white; font-size: 0.85rem;">
+                            <option value="ALL">All Statuses</option>
+                            <option value="ANSWERED">ANSWERED</option>
+                            <option value="DECLINED">DECLINED</option>
+                            <option value="NO-ANSWER">NO-ANSWER</option>
+                            <option value="DISCONNECTED-MID-CALL">DISCONNECTED-MID-CALL</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+
+                        <select id="dtmf-filter" onchange="onFilterChange()" style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.85rem; color: white; font-size: 0.85rem;">
+                            <option value="ALL">All Responses (Pressed 1)</option>
+                            <option value="1">YES (Pressed 1)</option>
+                            <option value="0">NO (No Press)</option>
+                        </select>
+
+                        <select id="page-size-select" onchange="onPageSizeChange()" style="background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.85rem; color: white; font-size: 0.85rem;">
+                            <option value="25">25 Rows per page</option>
+                            <option value="50">50 Rows per page</option>
+                            <option value="100">100 Rows per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Candidate Name</th>
+                                <th>Father Name</th>
+                                <th>Mobile Number</th>
+                                <th>Extension / Caller ID Used</th>
+                                <th>Status</th>
+                                <th>Attempt Level</th>
+                                <th>Pressed 1?</th>
+                                <th>Call Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calls-table-body">
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: var(--text-muted);">Loading call logs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Call Logs Pagination Controls -->
+                <div class="pagination-bar">
+                    <span id="calls-page-info">Showing 0 - 0 of 0 calls</span>
+                    <div class="pagination-controls">
+                        <button id="btn-prev-calls" class="btn-page" onclick="changeCallsPage(-1)" disabled>◀ Previous</button>
+                        <span id="calls-page-num" style="font-weight: 600; color: #f3f4f6;">Page 1 of 1</span>
+                        <button id="btn-next-calls" class="btn-page" onclick="changeCallsPage(1)" disabled>Next ▶</button>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Analytics Section -->
+
+        <!-- Call Queue Section -->
+        <div id="section-queue" style="display: none;">
+            <!-- Operating Window Banner -->
+            <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="color: #a78bfa; font-size: 1.1rem; font-weight: 600;">🕒 Operating Window: 10:00 AM – 06:00 PM PKT</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                        Calls in this queue are processed automatically during authorized campaign hours using 5 concurrent trunks with anti-spam jitter gaps.
+                    </p>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; font-size: 0.85rem;">
+                    ● QUEUE ACTIVE
+                </div>
+            </div>
+
+            <!-- Live Active & Recent Call Monitor Card (2-Minute Sliding Window) -->
+            <div class="table-card" style="margin-bottom: 1.5rem; border: 1px solid rgba(59, 130, 246, 0.3); background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px);">
+                <div class="table-header" style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <h2 style="color: #60a5fa; font-size: 1.05rem;">⚡ Live Active & Recent Call Monitor</h2>
+                        <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted);">(Auto-expires after 2 minutes)</span>
+                    </div>
+                    <span id="active-monitor-count-badge" class="badge-live" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">0 Active / Recent</span>
+                </div>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Candidate Name</th>
+                                <th>Mobile Number</th>
+                                <th>Extension / Line</th>
+                                <th>Live Call Status</th>
+                                <th>Duration</th>
+                                <th>Keypress</th>
+                                <th>Expires In</th>
+                            </tr>
+                        </thead>
+                        <tbody id="active-monitor-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                    No active or recent calls in the 2-minute sliding window.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Queue Table Card -->
+            <div class="table-card">
+                <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                    <div>
+                        <h2>Pending & Queued Outbound Calls</h2>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;" id="queue-count-badge">0 Pending Calls</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <button class="btn-action-secondary" data-role="admin" onclick="openQuickRemoveModal()" title="Paste mobile numbers to skip matching calls in queue">
+                            <span>📋 Paste Numbers to Skip</span>
+                        </button>
+                        <button class="btn-action-danger" id="btn-remove-selected-queue" data-role="admin" onclick="removeSelectedQueueCalls()" disabled title="Skip selected calls from queue">
+                            <span>🗑️ Remove Selected (<span id="selected-queue-count">0</span>)</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-scroll-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">
+                                    <input type="checkbox" id="select-all-queue" onchange="toggleSelectAllQueue(this)" title="Select all on this page">
+                                </th>
+                                <th>Candidate Name</th>
+                                <th>Father Name</th>
+                                <th>Mobile Number</th>
+                                <th>Queue Status</th>
+                                <th>Queued At</th>
+                                <th style="text-align: center; width: 90px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="queue-table-body">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted);">No calls pending in queue.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Queue Pagination Controls -->
+                <div class="pagination-bar">
+                    <span id="queue-page-info">Showing 0 - 0 of 0 pending calls</span>
+                    <div class="pagination-controls">
+                        <button id="btn-prev-queue" class="btn-page" onclick="changeQueuePage(-1)" disabled>◀ Previous</button>
+                        <span id="queue-page-num" style="font-weight: 600; color: #f3f4f6;">Page 1 of 1</span>
+                        <button id="btn-next-queue" class="btn-page" onclick="changeQueuePage(1)" disabled>Next ▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Presets Section -->
+        <div id="section-voices" style="display: none;">
+            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h3 style="color: #f8fafc; font-size: 1.15rem; font-weight: 700;">🎙️ Voice Presets & Audio Message Library</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                        Select which voice preset is currently active for outgoing calls or upload new custom message pairs (Initial Announcement + Thanks Message).
+                    </p>
+                </div>
+                <button data-role="admin" onclick="openUploadPresetModal()" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); transition: all 0.2s ease;">
+                    ➕ Upload New Voice Preset
+                </button>
+            </div>
+
+            <!-- Presets Cards Grid -->
+            <div id="voice-presets-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Loading voice presets...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Trigger Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <h3>Initiate Outbound Call</h3>
+            <div class="form-group">
+                <label for="phone-input">Phone Number</label>
+                <input type="text" id="phone-input" value="03294543753" placeholder="e.g. 03294543753">
+            </div>
+            <div class="form-group">
+                <label for="caller-input">Outbound Caller ID</label>
+                <input type="text" id="caller-input" value="415393002">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-submit" data-role="admin" onclick="triggerCall()">Start Call</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Remove Numbers from Queue Modal -->
+    <div class="modal-overlay" id="quick-remove-modal" style="display: none;">
+        <div class="modal" style="max-width: 500px;">
+            <h3>📋 Skip / Remove Numbers from Queue</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+                Paste mobile numbers to skip them from the pending queue. Matching calls will be canceled immediately and will not be dialed. Supports comma, newline, or space-separated numbers (e.g. 03001234567, 923001234567, 3001234567).
+            </p>
+            <div class="form-group">
+                <label for="quick-remove-input">Mobile Numbers to Skip <span style="color: #ef4444;">*</span></label>
+                <textarea id="quick-remove-input" rows="6" style="width: 100%; background: #0b0f19; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; color: white; font-family: monospace; font-size: 0.9rem; resize: vertical;" placeholder="03001234567&#10;03219876543&#10;03335555555"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="quick-remove-reason">Reason (Optional)</label>
+                <input type="text" id="quick-remove-reason" placeholder="e.g. Invalid / Requested DND / Testing" value="Skipped by admin from queue">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeQuickRemoveModal()">Cancel</button>
+                <button class="btn-submit" id="btn-submit-quick-remove" data-role="admin" style="background: #ef4444;" onclick="submitQuickRemoveNumbers()">Skip Numbers</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Voice Preset Modal -->
+    <div class="modal-overlay" id="upload-preset-modal-overlay" style="display: none;">
+        <div class="modal" style="max-width: 520px;">
+            <h3>🎙️ Upload New Voice Preset</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+                Upload custom initial announcement and thanks audio files. The system automatically normalizes your audio to 8kHz Mono WAV for crystal-clear telephony quality.
+            </p>
+
+            <div class="form-group">
+                <label for="preset-name-input">Preset Name <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="preset-name-input" placeholder="e.g. Admissions Fall 2026 Announcement">
+            </div>
+
+            <div class="form-group">
+                <label for="preset-desc-input">Description (Optional)</label>
+                <input type="text" id="preset-desc-input" placeholder="e.g. Custom voice message for undergraduate leads">
+            </div>
+
+            <div class="form-group">
+                <label for="preset-init-file">1. Initial Announcement Audio (.wav, .mp3) <span style="color: #ef4444;">*</span></label>
+                <input type="file" id="preset-init-file" accept="audio/*">
+            </div>
+
+            <div class="form-group">
+                <label for="preset-thanks-file">2. Thanks / Confirmation Audio (.wav, .mp3) <span style="color: #ef4444;">*</span></label>
+                <input type="file" id="preset-thanks-file" accept="audio/*">
+            </div>
+
+            <div class="modal-actions" style="margin-top: 1.5rem;">
+                <button class="btn-cancel" onclick="closeUploadPresetModal()">Cancel</button>
+                <button class="btn-submit" id="btn-submit-preset" data-role="admin" onclick="uploadVoicePreset()" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    🚀 Upload & Process Preset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modular Frontend v2 Core Modules -->
+    <script src="/static/js/core/api.js"></script>
+    <script src="/static/js/core/auth.js"></script>
+    <script src="/static/js/components/toast.js"></script>
+    <script src="/static/js/core/rbac.js"></script>
+    <script src="/static/js/components/user-modal.js"></script>
+
+    <script>
+        // Non-Blocking Modern Toast Notification System (delegates to modular toast.js)
+        // Global Authentication Verification & RBAC Initialization
+        async function checkAuth() {
+            try {
+                const user = await window.authService.checkAuth();
+                if (user) {
+                    window.rbac.init(user);
+                }
+                return user;
+            } catch (err) {
+                return null;
+            }
+        }
+
+        async function handleLogout() {
+            await window.authService.logout();
+        }
+
+        // Run auth verification immediately
+        checkAuth();
+
+        // Dynamic Branding & Metadata Adaptation (12-Factor Multi-Deployment)
+        window.systemCallerId = '0518490090';
+        async function loadBranding() {
+            try {
+                const res = await fetch('/api/v1/system/branding');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.project_name) {
+                        const h1 = document.querySelector('.title-group h1');
+                        if (h1) h1.innerText = data.project_name;
+                        document.title = data.project_name;
+                    }
+                    if (data.outgoing_caller_id) {
+                        window.systemCallerId = data.outgoing_caller_id;
+                        const callerInput = document.getElementById('caller-input');
+                        if (callerInput) callerInput.value = data.outgoing_caller_id;
+                    }
+                }
+            } catch (e) {}
+        }
+        loadBranding();
+
+        // Pagination & Filter State
+        let callsCurrentPage = 1;
+        let callsPageSize = 25;
+        let callsTotalPages = 1;
+        let callsTotalRecords = 0;
+
+        let queueCurrentPage = 1;
+        let queuePageSize = 25;
+        let queueTotalPages = 1;
+        let queueTotalRecords = 0;
+
+        let searchDebounceTimer = null;
+
+        // Formats UTC ISO timestamps cleanly into Pakistan Standard Time (PKT / Asia/Karachi)
+        function formatPKTime(dateInput) {
+            if (!dateInput) return 'N/A';
+            let iso = typeof dateInput === 'string' ? dateInput.trim() : dateInput;
+            if (typeof iso === 'string') {
+                if (!iso.endsWith('Z') && !iso.includes('+')) {
+                    iso += 'Z';
+                }
+            }
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return 'N/A';
+
+            return d.toLocaleString('en-US', {
+                timeZone: 'Asia/Karachi',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+        }
+
+        // 2-Minute Sliding Window Live Call Monitor State
+        const liveMonitorCalls = new Map();
+
+        function pushToLiveMonitor(call, isRealtime = false) {
+            if (!call || !call.id) return;
+            const status = (call.status || '').toLowerCase();
+            if (status === 'queued') return;
+
+            const custom = call.custom_vars || {};
+            const callId = call.id;
+
+            // Calculate when the call event occurred
+            let callTime = Date.now();
+            if (!isRealtime) {
+                let isoDate = call.updated_at || call.created_at;
+                if (isoDate) {
+                    if (!isoDate.endsWith('Z') && !isoDate.includes('+')) {
+                        isoDate += 'Z';
+                    }
+                    const parsedTime = new Date(isoDate).getTime();
+                    if (!isNaN(parsedTime)) {
+                        callTime = parsedTime;
+                    }
+                }
+            }
+
+            const elapsedMs = Date.now() - callTime;
+            // Ignore historical call logs older than 2 minutes (120,000 ms) on page load/refresh
+            if (!isRealtime && elapsedMs >= 120000) {
+                return;
+            }
+
+            if (!liveMonitorCalls.has(callId)) {
+                liveMonitorCalls.set(callId, {
+                    id: callId,
+                    to_number: call.to_number || custom.phone_number || 'N/A',
+                    candidate_name: call.candidate_name || custom.name || custom.candidate_name || custom.lead_name || 'N/A',
+                    extension: call.extension_used || (call.caller_id ? call.caller_id : '415393002'),
+                    status: call.status,
+                    duration: call.duration || 0,
+                    pressed_1: call.user_pressed_1 === true || call.dtmf_pressed === '1' || custom.user_pressed_1 === true,
+                    added_at: callTime
+                });
+            } else {
+                const item = liveMonitorCalls.get(callId);
+                item.status = call.status;
+                item.duration = call.duration || item.duration;
+                item.pressed_1 = item.pressed_1 || (call.user_pressed_1 === true || call.dtmf_pressed === '1' || custom.user_pressed_1 === true);
+                if (call.extension_used) item.extension = call.extension_used;
+                if (isRealtime) {
+                    item.added_at = Date.now();
+                }
+            }
+        }
+
+        function renderLiveMonitorTable() {
+            const tbody = document.getElementById('active-monitor-table-body');
+            const badge = document.getElementById('active-monitor-count-badge');
+            if (!tbody || !badge) return;
+
+            const now = Date.now();
+            let activeCount = 0;
+            const rowsHtml = [];
+
+            liveMonitorCalls.forEach((item, callId) => {
+                const elapsed = now - item.added_at;
+                const remainingSec = Math.max(0, 120 - Math.floor(elapsed / 1000));
+
+                if (remainingSec <= 0) {
+                    liveMonitorCalls.delete(callId);
+                } else {
+                    activeCount++;
+                    const mins = Math.floor(remainingSec / 60);
+                    const secs = remainingSec % 60;
+                    const timeStr = `${mins}m ${secs.toString().padStart(2, '0')}s`;
+
+                    const stLower = (item.status || '').toLowerCase();
+                    const pressed1 = item.pressed_1;
+
+                    rowsHtml.push(`
+                        <tr>
+                            <td style="font-weight: 600; color: #f3f4f6;">${item.candidate_name}</td>
+                            <td style="font-family: monospace;">${item.to_number}</td>
+                            <td><span style="color: var(--accent-purple); font-weight: 600;">Ext ${item.extension}</span></td>
+                            <td><span class="status-badge status-${stLower}">${item.status}</span></td>
+                            <td>${item.duration ? item.duration + 's' : '0s'}</td>
+                            <td>
+                                ${pressed1 
+                                    ? `<span class="pill-dtmf pressed-1" style="font-weight: 700;">YES</span>`
+                                    : `<span class="pill-dtmf skipped" style="font-weight: 600;">NO</span>`
+                                }
+                            </td>
+                            <td><span style="color: #60a5fa; font-weight: 700; font-family: monospace;">⏱️ ${timeStr}</span></td>
+                        </tr>
+                    `);
+                }
+            });
+
+            badge.innerText = `${activeCount} Active / Recent`;
+
+            if (rowsHtml.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No active or recent calls in the 2-minute sliding window.</td></tr>`;
+            } else {
+                tbody.innerHTML = rowsHtml.join('');
+            }
+        }
+
+        setInterval(renderLiveMonitorTable, 1000);
+
+        function switchTab(tabName) {
+            const analyticsSec = document.getElementById('section-analytics');
+            const queueSec = document.getElementById('section-queue');
+            const voicesSec = document.getElementById('section-voices');
+
+            const btnAnalytics = document.getElementById('tab-analytics');
+            const btnQueue = document.getElementById('tab-queue');
+            const btnVoices = document.getElementById('tab-voices');
+
+            // Reset tab styles
+            [btnAnalytics, btnQueue, btnVoices].forEach(btn => {
+                if (btn) {
+                    btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.style.borderColor = 'var(--border-color)';
+                }
+            });
+
+            analyticsSec.style.display = 'none';
+            queueSec.style.display = 'none';
+            if (voicesSec) voicesSec.style.display = 'none';
+
+            if (tabName === 'analytics') {
+                analyticsSec.style.display = 'block';
+                btnAnalytics.style.background = 'rgba(59, 130, 246, 0.2)';
+                btnAnalytics.style.color = '#60a5fa';
+                btnAnalytics.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+                fetchCallLogs(callsCurrentPage);
+            } else if (tabName === 'queue') {
+                queueSec.style.display = 'block';
+                btnQueue.style.background = 'rgba(139, 92, 246, 0.2)';
+                btnQueue.style.color = '#c084fc';
+                btnQueue.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+                fetchQueueLogs(queueCurrentPage);
+            } else if (tabName === 'voices') {
+                if (voicesSec) voicesSec.style.display = 'block';
+                btnVoices.style.background = 'rgba(16, 185, 129, 0.2)';
+                btnVoices.style.color = '#34d399';
+                btnVoices.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                loadVoicePresets();
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/v1/calls/stats');
+                if (!res.ok) return;
+                const stats = await res.json();
+
+                document.getElementById('stat-total').innerText = (stats.total_calls || 0).toLocaleString();
+                document.getElementById('stat-pressed-1').innerText = (stats.pressed_1_count || 0).toLocaleString();
+                document.getElementById('stat-skipped').innerText = (stats.skipped_count || 0).toLocaleString();
+                document.getElementById('stat-conversion').innerText = (stats.conversion_rate || 0.0) + '%';
+                document.getElementById('queue-count-badge').innerText = `${(stats.queued_count || 0).toLocaleString()} Pending Calls`;
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+            }
+        }
+
+        async function fetchCallLogs(page = 1) {
+            try {
+                callsCurrentPage = page;
+                const search = encodeURIComponent(document.getElementById('search-input').value.trim());
+                const status = document.getElementById('status-filter').value;
+                const dtmf = document.getElementById('dtmf-filter').value;
+
+                let url = `/api/v1/calls/paginated?page=${page}&page_size=${callsPageSize}`;
+                if (status !== 'ALL') url += `&status=${status}`;
+                if (dtmf !== 'ALL') url += `&dtmf=${dtmf}`;
+                if (search) url += `&search=${search}`;
+
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                callsTotalRecords = data.total_records || 0;
+                callsTotalPages = data.total_pages || 1;
+                callsCurrentPage = data.current_page || 1;
+
+                renderCallRows(data.calls || []);
+                updateCallsPaginationUI();
+            } catch (err) {
+                console.error("Error fetching call logs:", err);
+            }
+        }
+
+        function renderCallRows(calls) {
+            const tbody = document.getElementById('calls-table-body');
+            tbody.innerHTML = '';
+
+            if (calls.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No call records found matching criteria.</td></tr>`;
+                return;
+            }
+
+            calls.forEach(call => {
+                const custom = call.custom_vars || {};
+                const pressed1 = call.user_pressed_1 === true || call.dtmf_pressed === '1' || custom.user_pressed_1 === true;
+                const dateStr = formatPKTime(call.updated_at || call.created_at);
+
+                const cName = call.candidate_name || custom.name || custom.candidate_name || 'N/A';
+                const fName = call.father_name || custom.father_name || 'N/A';
+                const extCaller = call.caller_id || (call.extension_used ? `Ext ${call.extension_used}` : '415393002');
+                const retryLvl = typeof call.retry_count === 'number' ? call.retry_count : 0;
+
+                pushToLiveMonitor(call, false);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 600; color: #f3f4f6;">${cName}</td>
+                    <td style="color: var(--text-muted);">${fName}</td>
+                    <td style="font-weight: 600;">${call.to_number}</td>
+                    <td style="font-size: 0.85rem; color: #a78bfa;">${extCaller}</td>
+                    <td><span class="status-badge status-${(call.status || '').toLowerCase()}">${call.status}</span></td>
+                    <td style="font-size: 0.85rem; font-weight: 600; color: #c084fc;">Attempt #${retryLvl}</td>
+                    <td>
+                        ${pressed1 
+                            ? `<span class="pill-dtmf pressed-1" style="font-weight: 700;">YES</span>`
+                            : `<span class="pill-dtmf skipped" style="font-weight: 600;">NO</span>`
+                        }
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCallsPaginationUI() {
+            const startItem = callsTotalRecords === 0 ? 0 : (callsCurrentPage - 1) * callsPageSize + 1;
+            const endItem = Math.min(callsCurrentPage * callsPageSize, callsTotalRecords);
+
+            document.getElementById('calls-page-info').innerText = `Showing ${startItem.toLocaleString()} - ${endItem.toLocaleString()} of ${callsTotalRecords.toLocaleString()} calls`;
+            document.getElementById('calls-page-num').innerText = `Page ${callsCurrentPage} of ${callsTotalPages}`;
+
+            document.getElementById('btn-prev-calls').disabled = callsCurrentPage <= 1;
+            document.getElementById('btn-next-calls').disabled = callsCurrentPage >= callsTotalPages;
+        }
+
+        function changeCallsPage(delta) {
+            const newPage = callsCurrentPage + delta;
+            if (newPage >= 1 && newPage <= callsTotalPages) {
+                fetchCallLogs(newPage);
+            }
+        }
+
+        async function fetchQueueLogs(page = 1) {
+            try {
+                queueCurrentPage = page;
+                const url = `/api/v1/calls/paginated?page=${page}&page_size=${queuePageSize}&status=queued`;
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                queueTotalRecords = data.total_records || 0;
+                queueTotalPages = data.total_pages || 1;
+                queueCurrentPage = data.current_page || 1;
+
+                renderQueueRows(data.calls || []);
+                updateQueuePaginationUI();
+            } catch (err) {
+                console.error("Error fetching queue logs:", err);
+            }
+        }
+
+        // Queue Selection & Skip Management State
+        let selectedQueueCallIds = new Set();
+        let currentQueuePageCallIds = [];
+
+        function updateQueueSelection() {
+            const checkboxes = document.querySelectorAll('.queue-row-checkbox');
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedQueueCallIds.add(cb.value);
+                } else {
+                    selectedQueueCallIds.delete(cb.value);
+                }
+            });
+            updateQueueSelectionUI();
+        }
+
+        function updateQueueSelectionUI() {
+            const count = selectedQueueCallIds.size;
+            const countSpan = document.getElementById('selected-queue-count');
+            const btnRemove = document.getElementById('btn-remove-selected-queue');
+            const selectAllCb = document.getElementById('select-all-queue');
+
+            if (countSpan) countSpan.innerText = count;
+            if (btnRemove) btnRemove.disabled = (count === 0);
+
+            if (selectAllCb && currentQueuePageCallIds.length > 0) {
+                const allPageSelected = currentQueuePageCallIds.every(id => selectedQueueCallIds.has(id));
+                const somePageSelected = currentQueuePageCallIds.some(id => selectedQueueCallIds.has(id));
+                selectAllCb.checked = allPageSelected;
+                selectAllCb.indeterminate = (!allPageSelected && somePageSelected);
+            } else if (selectAllCb) {
+                selectAllCb.checked = false;
+                selectAllCb.indeterminate = false;
+            }
+        }
+
+        function toggleSelectAllQueue(masterCheckbox) {
+            const isChecked = masterCheckbox.checked;
+            currentQueuePageCallIds.forEach(id => {
+                if (isChecked) {
+                    selectedQueueCallIds.add(id);
+                } else {
+                    selectedQueueCallIds.delete(id);
+                }
+            });
+
+            document.querySelectorAll('.queue-row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateQueueSelectionUI();
+        }
+
+        async function skipSingleQueueCall(callId, phoneNumber, btnElement) {
+            if (!window.rbac.checkPermission('skip queued calls')) return;
+            if (btnElement) {
+                btnElement.disabled = true;
+                btnElement.innerText = '...';
+            }
+            try {
+                const res = await fetch(`/api/v1/campaigns/queue/calls/${callId}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    selectedQueueCallIds.delete(callId);
+                    showToast(`Call to ${phoneNumber} skipped from queue.`, 'success');
+                    fetchQueueLogs(queueCurrentPage);
+                } else {
+                    showToast(data.detail || data.message || 'Failed to skip call', 'error');
+                    if (btnElement) {
+                        btnElement.disabled = false;
+                        btnElement.innerText = '✕ Skip';
+                    }
+                }
+            } catch (err) {
+                console.error("Error skipping call:", err);
+                showToast("Error skipping call: " + err.message, 'error');
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.innerText = '✕ Skip';
+                }
+            }
+        }
+
+        async function removeSelectedQueueCalls() {
+            if (!window.rbac.checkPermission('remove queued calls')) return;
+            const count = selectedQueueCallIds.size;
+            if (count === 0) return;
+
+            const btnRemove = document.getElementById('btn-remove-selected-queue');
+            if (btnRemove) {
+                btnRemove.disabled = true;
+                btnRemove.innerHTML = `<span>⏳ Removing (${count})...</span>`;
+            }
+
+            try {
+                const res = await fetch('/api/v1/campaigns/queue/remove-calls', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        call_ids: Array.from(selectedQueueCallIds),
+                        reason: 'Skipped by admin from queue'
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || `Successfully removed ${data.removed_count} calls.`, 'success');
+                    selectedQueueCallIds.clear();
+                    fetchQueueLogs(queueCurrentPage);
+                } else {
+                    showToast(data.detail || data.message || 'Failed to remove selected calls', 'error');
+                }
+            } catch (err) {
+                console.error("Error removing selected calls:", err);
+                showToast("Error removing selected calls: " + err.message, 'error');
+            } finally {
+                updateQueueSelectionUI();
+            }
+        }
+
+        function openQuickRemoveModal() {
+            if (!window.rbac.checkPermission('open quick remove tool')) return;
+            const modal = document.getElementById('quick-remove-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                const input = document.getElementById('quick-remove-input');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }
+        }
+
+        function closeQuickRemoveModal() {
+            const modal = document.getElementById('quick-remove-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function submitQuickRemoveNumbers() {
+            if (!window.rbac.checkPermission('skip queued numbers')) return;
+            const rawText = document.getElementById('quick-remove-input').value.trim();
+            if (!rawText) {
+                showToast("Please enter at least one phone number.", "warning");
+                return;
+            }
+
+            const numbers = rawText
+                .split(/[\r\n,;\s]+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            if (numbers.length === 0) {
+                showToast("No valid phone numbers found in input.", "warning");
+                return;
+            }
+
+            const reason = document.getElementById('quick-remove-reason').value.trim() || 'Skipped by admin from queue';
+            const btnSubmit = document.getElementById('btn-submit-quick-remove');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = 'Skipping...';
+            }
+
+            try {
+                const res = await fetch('/api/v1/campaigns/queue/remove-numbers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone_numbers: numbers,
+                        reason: reason
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Numbers skipped successfully.', 'success');
+                    closeQuickRemoveModal();
+                    fetchQueueLogs(queueCurrentPage);
+                } else {
+                    showToast(data.detail || data.message || 'Failed to remove numbers', 'error');
+                }
+            } catch (err) {
+                console.error("Error skipping numbers:", err);
+                showToast("Error skipping numbers: " + err.message, 'error');
+            } finally {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = 'Skip Numbers';
+                }
+            }
+        }
+
+        function renderQueueRows(calls) {
+            const qbody = document.getElementById('queue-table-body');
+            qbody.innerHTML = '';
+            currentQueuePageCallIds = (calls || []).map(c => c.id);
+
+            if (!calls || calls.length === 0) {
+                qbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No calls pending in queue. Upload a CSV to populate.</td></tr>`;
+                updateQueueSelectionUI();
+                return;
+            }
+
+            calls.forEach(call => {
+                const custom = call.custom_vars || {};
+                const cName = call.candidate_name || custom.name || custom.candidate_name || 'N/A';
+                const fName = call.father_name || custom.father_name || 'N/A';
+                const isChecked = selectedQueueCallIds.has(call.id) ? 'checked' : '';
+                const qtr = document.createElement('tr');
+                qtr.innerHTML = `
+                    <td style="text-align: center; width: 40px;">
+                        <input type="checkbox" class="queue-row-checkbox" value="${call.id}" ${isChecked} onchange="updateQueueSelection()">
+                    </td>
+                    <td style="font-weight: 600; color: #f3f4f6;">${cName}</td>
+                    <td style="color: var(--text-muted);">${fName}</td>
+                    <td style="font-weight: 600; font-family: monospace;">${call.to_number}</td>
+                    <td><span class="status-badge status-ringing">QUEUED</span></td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">${formatPKTime(call.created_at)}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-skip-call" data-role="admin" onclick="skipSingleQueueCall('${call.id}', '${call.to_number}', this)" title="Skip this number">✕ Skip</button>
+                    </td>
+                `;
+                qbody.appendChild(qtr);
+            });
+
+            updateQueueSelectionUI();
+        }
+
+        function updateQueuePaginationUI() {
+            const startItem = queueTotalRecords === 0 ? 0 : (queueCurrentPage - 1) * queuePageSize + 1;
+            const endItem = Math.min(queueCurrentPage * queuePageSize, queueTotalRecords);
+
+            document.getElementById('queue-page-info').innerText = `Showing ${startItem.toLocaleString()} - ${endItem.toLocaleString()} of ${queueTotalRecords.toLocaleString()} pending calls`;
+            document.getElementById('queue-page-num').innerText = `Page ${queueCurrentPage} of ${queueTotalPages}`;
+
+            document.getElementById('btn-prev-queue').disabled = queueCurrentPage <= 1;
+            document.getElementById('btn-next-queue').disabled = queueCurrentPage >= queueTotalPages;
+        }
+
+        function changeQueuePage(delta) {
+            const newPage = queueCurrentPage + delta;
+            if (newPage >= 1 && newPage <= queueTotalPages) {
+                fetchQueueLogs(newPage);
+            }
+        }
+
+        function onSearchInput() {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                fetchCallLogs(1);
+            }, 300);
+        }
+
+        function onFilterChange() {
+            fetchCallLogs(1);
+        }
+
+        function onPageSizeChange() {
+            callsPageSize = parseInt(document.getElementById('page-size-select').value, 10);
+            fetchCallLogs(1);
+        }
+
+        function openModal() {
+            if (!window.rbac.checkPermission('initiate outbound calls')) return;
+            document.getElementById('modal-overlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        async function triggerCall() {
+            if (!window.rbac.checkPermission('initiate outbound calls')) return;
+            const phone = document.getElementById('phone-input').value;
+            const callerId = document.getElementById('caller-input').value;
+
+            closeModal();
+
+            try {
+                const res = await fetch('/api/v1/calls/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to_number: phone,
+                        caller_id: callerId,
+                        custom_vars: {
+                            lead_name: "Muhammad Usman Raja",
+                            media: "sound:university_announcement"
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    showToast(`🚀 Call initiated to ${phone}!`, 'success');
+                    refreshData();
+                } else {
+                    showToast("Failed to initiate call.", 'error');
+                }
+            } catch (err) {
+                showToast("Error triggering call: " + err.message, 'error');
+            }
+        }
+
+        async function handleCSVUpload(event) {
+            if (!window.rbac.checkPermission('upload CSV contacts')) {
+                event.target.value = '';
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/v1/contacts/upload-csv', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`✅ CSV Upload Successful!\nFile: ${data.filename}\nContacts Imported: ${data.imported_contacts}\nQueued Calls: ${data.queued_calls}`);
+                    refreshData();
+                } else {
+                    const errData = await res.json();
+                    alert(`❌ CSV Upload Failed: ${errData.detail || 'Error uploading file'}`);
+                }
+            } catch (err) {
+                alert("Error uploading CSV: " + err.message);
+            }
+            event.target.value = '';
+        }
+
+        async function clearDatabase() {
+            if (!confirm("⚠️ Are you sure you want to wipe all test calls and contacts from the database?")) return;
+            try {
+                const res = await fetch('/api/v1/calls/clear-all', { method: 'DELETE' });
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`✅ Database cleared! Deleted ${data.deleted_calls} calls and ${data.deleted_contacts} contacts.`);
+                    refreshData();
+                } else {
+                    alert("❌ Failed to clear database.");
+                }
+            } catch (err) {
+                alert("Error clearing database: " + err.message);
+            }
+        }
+
+        let isCampaignPaused = false;
+
+        async function fetchCampaignStatus() {
+            try {
+                const res = await fetch('/api/v1/campaigns/status');
+                if (!res.ok) return;
+                const data = await res.json();
+                isCampaignPaused = data.is_paused;
+
+                const statusEl = document.getElementById('dash-campaign-status');
+                const btnEl = document.getElementById('dash-toggle-pause-btn');
+
+                if (isCampaignPaused) {
+                    statusEl.innerHTML = '🟡 PAUSED';
+                    statusEl.style.background = 'rgba(245, 158, 11, 0.15)';
+                    statusEl.style.color = '#fbbf24';
+                    statusEl.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+
+                    btnEl.innerHTML = '▶️ Resume Campaign';
+                    btnEl.style.background = 'rgba(16, 185, 129, 0.2)';
+                    btnEl.style.color = '#34d399';
+                    btnEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                } else {
+                    statusEl.innerHTML = '🟢 RUNNING';
+                    statusEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                    statusEl.style.color = '#34d399';
+                    statusEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+
+                    btnEl.innerHTML = '⏸️ Pause Campaign';
+                    btnEl.style.background = 'rgba(245, 158, 11, 0.2)';
+                    btnEl.style.color = '#fbbf24';
+                    btnEl.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                }
+
+                // Carrier Circuit Breaker UI State
+                const cb = data.circuit_breaker;
+                const bannerEl = document.getElementById('dash-circuit-breaker-banner');
+                const badgeEl = document.getElementById('dash-circuit-breaker-badge');
+                const timerEl = document.getElementById('dash-circuit-breaker-timer');
+                const subtextEl = document.getElementById('dash-circuit-breaker-subtext');
+
+                if (cb && cb.is_active) {
+                    if (bannerEl) bannerEl.style.display = 'flex';
+                    if (badgeEl) badgeEl.style.display = 'none';
+                    if (timerEl) {
+                        const mins = Math.floor(cb.remaining_seconds / 60);
+                        const secs = cb.remaining_seconds % 60;
+                        timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    }
+                    if (subtextEl) {
+                        subtextEl.textContent = `${cb.threshold || 20} consecutive declines detected. Outbound dialing resting for ${cb.cooldown_minutes || 30} minutes to protect SIP trunk.`;
+                    }
+                    if (statusEl && !isCampaignPaused) {
+                        statusEl.innerHTML = `🛑 CARRIER REST (${Math.ceil(cb.remaining_seconds / 60)}m)`;
+                        statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+                        statusEl.style.color = '#f87171';
+                        statusEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }
+                } else {
+                    if (bannerEl) bannerEl.style.display = 'none';
+                    if (cb && cb.consecutive_declines > 0) {
+                        if (badgeEl) {
+                            badgeEl.style.display = 'inline-block';
+                            badgeEl.textContent = `⚠️ Declines: ${cb.consecutive_declines}/${cb.threshold || 20}`;
+                        }
+                    } else {
+                        if (badgeEl) badgeEl.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching campaign status:", err);
+            }
+        }
+
+        async function resumeCircuitBreaker(btnEl) {
+            if (!window.rbac.checkPermission('force resume circuit breaker')) return;
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerText = "⏳ Resuming...";
+            }
+            try {
+                const res = await fetch('/api/v1/campaigns/circuit-breaker/resume', { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message || 'Carrier Circuit Breaker reset. Dialing resumed.', 'success');
+                await fetchCampaignStatus();
+                refreshData();
+            } catch (err) {
+                showToast("Error resuming circuit breaker: " + err.message, 'error');
+            } finally {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerText = "▶️ Force Resume Now";
+                }
+            }
+        }
+
+        async function togglePauseCampaign() {
+            if (!window.rbac.checkPermission('pause or resume campaign')) return;
+            const newPausedState = !isCampaignPaused;
+            isCampaignPaused = newPausedState;
+            const endpoint = newPausedState ? '/api/v1/campaigns/pause' : '/api/v1/campaigns/resume';
+
+            const statusEl = document.getElementById('dash-campaign-status');
+            const btnEl = document.getElementById('dash-toggle-pause-btn');
+
+            if (newPausedState) {
+                if (statusEl) {
+                    statusEl.innerHTML = '🟡 PAUSED';
+                    statusEl.style.background = 'rgba(245, 158, 11, 0.15)';
+                    statusEl.style.color = '#fbbf24';
+                    statusEl.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                }
+                if (btnEl) {
+                    btnEl.innerHTML = '▶️ Resume Campaign';
+                    btnEl.style.background = 'rgba(16, 185, 129, 0.2)';
+                    btnEl.style.color = '#34d399';
+                    btnEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.innerHTML = '🟢 RUNNING';
+                    statusEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                    statusEl.style.color = '#34d399';
+                    statusEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                }
+                if (btnEl) {
+                    btnEl.innerHTML = '⏸️ Pause Campaign';
+                    btnEl.style.background = 'rgba(245, 158, 11, 0.2)';
+                    btnEl.style.color = '#fbbf24';
+                    btnEl.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                }
+            }
+
+            try {
+                await fetch(endpoint, { method: 'POST' });
+                await fetchCampaignStatus();
+            } catch (err) {
+                alert("Error toggling campaign status: " + err.message);
+            }
+        }
+
+        async function triggerEmergencyStop() {
+            if (!window.rbac.checkPermission('trigger emergency stop')) return;
+            if (!confirm("🛑 EMERGENCY STOP:\nAre you sure you want to PAUSE the worker and HANGUP all active calls immediately?")) return;
+            try {
+                const res = await fetch('/api/v1/campaigns/emergency-stop', { method: 'POST' });
+                const data = await res.json();
+                alert(`🛑 ${data.message || 'Emergency stop executed!'}`);
+                await fetchCampaignStatus();
+                refreshData();
+            } catch (err) {
+                alert("Error executing emergency stop: " + err.message);
+            }
+        }
+
+        async function loadRetryStats() {
+            try {
+                const res = await fetch('/api/v1/calls/retry-stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    const sel = document.getElementById('reiterate-level-select');
+                    if (sel) {
+                        sel.options[0].text = `Attempt #0 (Initial Missed Calls) -> ${data.attempt_0_count} calls`;
+                        sel.options[1].text = `Attempt #1 (1st Retry Missed Calls) -> ${data.attempt_1_count} calls`;
+                        sel.options[2].text = `Attempt #2 (2nd Retry Missed Calls) -> ${data.attempt_2_count} calls`;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading retry stats:", err);
+            }
+        }
+
+        async function executeTargetedReiteration() {
+            if (!window.rbac.checkPermission('re-queue missed calls')) return;
+            const sel = document.getElementById('reiterate-level-select');
+            if (!sel) return;
+            const targetLevel = parseInt(sel.value, 10);
+            const selectedText = sel.options[sel.selectedIndex].text;
+
+            if (!confirm(`Are you sure you want to re-queue NO_ANSWER calls for ${selectedText}?\n\nThis will ONLY target calls at this exact attempt level and will NOT affect any other calls.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/v1/calls/reiterate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ retry_level: targetLevel })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    alert(`✅ ${data.message}`);
+                    refreshData();
+                } else {
+                    alert(`⚠️ Re-iteration failed: ${data.message || 'Unknown error'}`);
+                }
+            } catch (err) {
+                console.error("Error executing re-iteration:", err);
+                alert("Failed to connect to server.");
+            }
+        }
+
+        async function loadVoicePresets() {
+            const grid = document.getElementById('voice-presets-grid');
+            if (!grid) return;
+
+            try {
+                const res = await fetch('/api/v1/voice-presets');
+                if (!res.ok) throw new Error("Failed to fetch voice presets");
+                const presets = await res.json();
+
+                if (presets.length === 0) {
+                    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">No voice presets registered.</div>`;
+                    return;
+                }
+
+                grid.innerHTML = presets.map(p => {
+                    const activeBadge = p.is_active 
+                        ? `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">● ACTIVE VOICE</span>`
+                        : `<span style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.2); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">INACTIVE</span>`;
+                    
+                    const defaultBadge = p.is_default 
+                        ? `<span style="background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">SYSTEM DEFAULT</span>`
+                        : '';
+
+                    const activateBtn = p.is_active 
+                        ? `<button disabled style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; width: 100%;">✓ Currently Active</button>`
+                        : `<button data-role="admin" onclick="activateVoicePreset('${p.id}')" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; transition: all 0.2s ease;">⚡ Activate Voice Preset</button>`;
+
+                    const deleteBtn = (!p.is_default && !p.is_active)
+                        ? `<button data-role="admin" onclick="deleteVoicePreset('${p.id}')" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem; width: 100%;">🗑️ Delete Preset</button>`
+                        : '';
+
+                    return `
+                        <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid ${p.is_active ? '#10b981' : 'var(--border-color)'}; border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(12px); display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <h4 style="color: #f8fafc; font-size: 1rem; font-weight: 700; line-height: 1.3;">${p.name}</h4>
+                                    <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">${activeBadge} ${defaultBadge}</div>
+                                </div>
+                                <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">${p.description || 'No description provided.'}</p>
+                                
+                                <div style="margin-bottom: 0.75rem;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8;">📢 Initial Announcement Audio:</span>
+                                    <audio controls style="width: 100%; height: 32px; margin-top: 0.35rem; border-radius: 6px;" src="${p.initial_audio_url}"></audio>
+                                </div>
+
+                                <div style="margin-bottom: 1.25rem;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8;">🔔 Thanks / Confirmation Audio:</span>
+                                    <audio controls style="width: 100%; height: 32px; margin-top: 0.35rem; border-radius: 6px;" src="${p.thanks_audio_url}"></audio>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                ${activateBtn}
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Error loading voice presets:", err);
+                grid.innerHTML = `<div style="grid-column: 1 / -1; color: #ef4444; text-align: center; padding: 1.5rem;">Failed to load voice presets: ${err.message}</div>`;
+            }
+        }
+
+        async function activateVoicePreset(presetId) {
+            if (!window.rbac.checkPermission('activate voice presets')) return;
+            try {
+                const res = await fetch(`/api/v1/voice-presets/${presetId}/activate`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`✅ ${data.message}`, 'success');
+                    loadVoicePresets();
+                } else {
+                    showToast(`⚠️ ${data.detail || 'Failed to activate preset'}`, 'error');
+                }
+            } catch (err) {
+                showToast("Error activating preset: " + err.message, 'error');
+            }
+        }
+
+        function openUploadPresetModal() {
+            if (!window.rbac.checkPermission('upload voice presets')) return;
+            document.getElementById('upload-preset-modal-overlay').style.display = 'flex';
+        }
+
+        function closeUploadPresetModal() {
+            document.getElementById('upload-preset-modal-overlay').style.display = 'none';
+        }
+
+        async function uploadVoicePreset() {
+            if (!window.rbac.checkPermission('upload voice presets')) return;
+            const nameInput = document.getElementById('preset-name-input').value.trim();
+            const descInput = document.getElementById('preset-desc-input').value.trim();
+            const initFileInput = document.getElementById('preset-init-file').files[0];
+            const thanksFileInput = document.getElementById('preset-thanks-file').files[0];
+            const submitBtn = document.getElementById('btn-submit-preset');
+
+            if (!nameInput) {
+                showToast("Please enter a preset name.", 'warning');
+                return;
+            }
+            if (!initFileInput || !thanksFileInput) {
+                showToast("Please select both Initial Announcement and Thanks Audio files.", 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("name", nameInput);
+            if (descInput) formData.append("description", descInput);
+            formData.append("initial_file", initFileInput);
+            formData.append("thanks_file", thanksFileInput);
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ Processing Audio (FFmpeg 8kHz)...";
+
+            try {
+                const res = await fetch('/api/v1/voice-presets', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`✅ ${data.message}`, 'success');
+                    closeUploadPresetModal();
+                    loadVoicePresets();
+                } else {
+                    showToast(`⚠️ ${data.detail || 'Upload failed'}`, 'error');
+                }
+            } catch (err) {
+                showToast("Error uploading voice preset: " + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "🚀 Upload & Process Preset";
+            }
+        }
+
+        async function deleteVoicePreset(presetId) {
+            if (!window.rbac.checkPermission('delete voice presets')) return;
+            if (!confirm("Are you sure you want to delete this voice preset and its audio files?")) return;
+            try {
+                const res = await fetch(`/api/v1/voice-presets/${presetId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast("✅ Voice preset deleted.", 'success');
+                    loadVoicePresets();
+                } else {
+                    showToast(`⚠️ ${data.detail || 'Failed to delete preset'}`, 'error');
+                }
+            } catch (err) {
+                showToast("Error deleting preset: " + err.message, 'error');
+            }
+        }
+
+        function refreshData() {
+            fetchStats();
+            fetchCampaignStatus();
+            loadRetryStats();
+            const isAnalyticsVisible = document.getElementById('section-analytics').style.display !== 'none';
+            const isVoicesVisible = document.getElementById('section-voices') && document.getElementById('section-voices').style.display !== 'none';
+
+            if (isAnalyticsVisible) {
+                fetchCallLogs(callsCurrentPage);
+            } else if (isVoicesVisible) {
+                // Keep voice presets tab open without overwriting
+            } else {
+                fetchQueueLogs(queueCurrentPage);
+            }
+        }
+
+        // High-Performance Event-Driven Refresh with Debouncing
+        let refreshDebounceTimer = null;
+        function scheduleDebouncedRefresh(delay = 1200) {
+            if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
+            refreshDebounceTimer = setTimeout(() => {
+                if (!document.hidden) {
+                    refreshData();
+                }
+            }, delay);
+        }
+
+        // Initial fetch on load
+        refreshData();
+
+        // Safety fallback sync every 20s (pauses automatically when tab is hidden)
+        setInterval(() => {
+            if (!document.hidden) {
+                refreshData();
+            }
+        }, 20000);
+
+        // Instantly refresh when user switches back to this browser tab
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                refreshData();
+            }
+        });
+
+        // Real-Time Event-Driven WebSocket Stream
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/v1/ws/dashboard`;
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = function() {
+                console.log("⚡ Real-Time Dashboard WebSocket stream connected!");
+            };
+
+            socket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.event === "call_updated" || data.event === "campaign_updated") {
+                        if (data.call) pushToLiveMonitor(data.call, true);
+                        scheduleDebouncedRefresh(1200);
+                    } else if (data.event === "circuit_breaker_tripped" || data.event === "circuit_breaker_update" || data.event === "circuit_breaker_reset") {
+                        fetchCampaignStatus();
+                    } else if (data.event === "trunk_status") {
+                        const badge = document.getElementById("dash-trunk-status");
+                        if (badge) {
+                            if (data.online) {
+                                badge.style.background = "rgba(16, 185, 129, 0.15)";
+                                badge.style.color = "#34d399";
+                                badge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                                badge.innerText = "🟢 ONLINE";
+                            } else {
+                                badge.style.background = "rgba(239, 68, 68, 0.2)";
+                                badge.style.color = "#f87171";
+                                badge.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                                badge.innerText = "🔴 UNREACHABLE";
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("WS error:", e);
+                }
+            };
+
+            socket.onclose = function() {
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        initWebSocket();
+    </script>
+</body>
+</html>

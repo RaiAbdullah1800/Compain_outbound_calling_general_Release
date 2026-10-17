@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Mission Control & DIDs - Outbound Assistant V2</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/v2/css/theme.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/layout.css?v=2.2">
+    <link rel="stylesheet" href="/static/v2/css/components.css?v=2.2">
+</head>
+<body>
+    <div class="app-shell">
+        <div id="sidebar-slot"></div>
+
+        <div class="app-main">
+            <div id="header-slot"></div>
+
+            <main class="app-content">
+                <div id="viewer-banner-slot"></div>
+
+                <!-- Top Automation Controller Card -->
+                <div class="v2-card">
+                    <div class="v2-card-header">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span>⚙️ Automated Campaign Dispatcher</span>
+                            </div>
+                            <span class="v2-card-subtitle">Global background dialing scheduler operating window</span>
+                        </div>
+                        <span id="worker-status-badge" class="status-pill answered">Checking...</span>
+                    </div>
+
+                    <div class="v2-card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 1.05rem; color: var(--v2-text-primary);">
+                                Operating Hours Window: 10:00 AM – 08:00 PM PKT
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--v2-text-muted); margin-top: 0.25rem;">
+                                Pacing rate: 20–30 calls/hr | Max concurrency: 5 channels | Nayatel SIP Trunk
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button id="btn-toggle-worker" class="v2-btn v2-btn-secondary" data-role="admin" onclick="toggleWorker()">
+                                ⏸️ Pause Campaign Dispatcher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10 Extension PBX Hardware Rack -->
+                <div class="v2-card">
+                    <div class="v2-card-header">
+                        <div class="v2-card-title-group">
+                            <div class="v2-card-title">
+                                <span>📞 10 Dedicated Telephony DIDs Hardware Rack</span>
+                            </div>
+                            <span class="v2-card-subtitle">Physical line extensions and assigned Nayatel carrier caller IDs</span>
+                        </div>
+                    </div>
+
+                    <div class="v2-card-body" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Shift A Grid -->
+                        <div>
+                            <div id="shift-a-title" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--v2-primary); margin-bottom: 0.75rem;">
+                                Shift A (Lines 1–5)
+                            </div>
+                            <div id="ext-rack-shift-a" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Shift B Grid -->
+                        <div>
+                            <div id="shift-b-title" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--v2-role-admin); margin-bottom: 0.75rem;">
+                                Shift B (Lines 6–10)
+                            </div>
+                            <div id="ext-rack-shift-b" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carrier Circuit Breaker & Safeguards Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <!-- Circuit Breaker -->
+                    <div class="v2-card" id="circuit-breaker-card" style="margin-bottom: 0;">
+                        <div class="v2-card-header">
+                            <div class="v2-card-title">
+                                <span>🛑 Carrier Circuit Breaker</span>
+                            </div>
+                            <span id="cb-decline-count" class="status-pill busy">0 / 20</span>
+                        </div>
+                        <div class="v2-card-body">
+                            <p style="font-size: 0.82rem; color: var(--v2-text-muted); margin-bottom: 1rem;">
+                                Protects your Nayatel SIP trunk from carrier rate-limits. If 20 consecutive declines occur, dialing pauses for 30 minutes.
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div id="cb-status-text" style="font-size: 0.85rem;">Checking status...</div>
+                                <button id="btn-resume-cb" class="v2-btn v2-btn-primary v2-btn-sm" data-role="admin" style="display: none;" onclick="resumeCircuitBreaker()">
+                                    ▶️ Force Reset Breaker
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Queue Maintenance Purge -->
+                    <div class="v2-card" style="margin-bottom: 0;">
+                        <div class="v2-card-header">
+                            <div class="v2-card-title">
+                                <span>🗑️ Queue Purge & Maintenance</span>
+                            </div>
+                        </div>
+                        <div class="v2-card-body">
+                            <p style="font-size: 0.82rem; color: var(--v2-text-muted); margin-bottom: 1rem;">
+                                Clear all remaining pending calls from the database queue to restart a fresh batch or stop all pending dials.
+                            </p>
+                            <button class="v2-btn v2-btn-danger v2-btn-sm" data-role="admin" onclick="clearEntireQueue()">
+                                🗑️ Clear Entire Outbound Queue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/static/v2/js/core/api.js?v=2.2"></script>
+    <script src="/static/v2/js/core/auth.js?v=2.2"></script>
+    <script src="/static/v2/js/core/rbac.js?v=2.2"></script>
+    <script src="/static/v2/js/components/toast.js?v=2.2"></script>
+    <script src="/static/v2/js/components/modal.js?v=2.2"></script>
+    <script src="/static/v2/js/core/shell.js?v=2.2"></script>
+    <script src="/static/v2/js/pages/controller.js?v=2.2"></script>
+</body>
+</html>
